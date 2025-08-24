@@ -17,9 +17,8 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->text('description');
-            $table->json('images')->nullable(); // Array de URLs das imagens
             $table->string('condition'); // novo, usado, etc.
-            $table->string('location');
+            $table->string('address');
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
             $table->enum('status', ['available', 'reserved', 'donated'])->default('available');

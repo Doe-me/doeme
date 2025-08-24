@@ -25,12 +25,12 @@ class StoreDonationItemRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:2000'],
             'category_id' => ['required', 'exists:categories,id'],
-            'condition' => ['required', 'string', 'in:Novo,Usado - Excelente estado,Usado - Bom estado,Usado - Estado regular'],
-            'location' => ['required', 'string', 'max:255'],
-            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'condition' => ['required', 'string', /*'in:Novo,Usado - Excelente estado,Usado - Bom estado,Usado - Estado regular'*/],
+            'location' => ['required', 'array'],
+            'location.latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'location.longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'location.address' => ['nullable', 'string'],
             'images' => ['nullable', 'array', 'max:5'],
-            'images.*' => ['url'],
         ];
     }
 
@@ -56,8 +56,6 @@ class StoreDonationItemRequest extends FormRequest
             'longitude.between' => 'A longitude deve estar entre -180 e 180.',
             'images.array' => 'As imagens devem ser uma lista.',
             'images.max' => 'Você pode enviar no máximo 5 imagens.',
-            'images.*.url' => 'Cada imagem deve ser uma URL válida.',
         ];
     }
 }
-

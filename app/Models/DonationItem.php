@@ -14,9 +14,8 @@ class DonationItem extends Model
         'category_id',
         'title',
         'description',
-        'images',
         'condition',
-        'location',
+        'address',
         'latitude',
         'longitude',
         'status',
@@ -25,7 +24,6 @@ class DonationItem extends Model
     ];
 
     protected $casts = [
-        'images' => 'array',
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
         'donated_at' => 'datetime',
@@ -69,6 +67,14 @@ class DonationItem extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    /**
+     * Relacionamento com imagens
+     */
+    public function donationImages()
+    {
+        return $this->hasMany(DonationImages::class, 'donation_item_id');
     }
 
     /**

@@ -33,7 +33,7 @@ class DonationItemRepository implements DonationItemRepositoryInterface
 
     public function getAvailableItems(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
-        $query = DonationItem::with(['user', 'category'])
+        $query = DonationItem::with(['user', 'category', 'donationImages'])
             ->available()
             ->latest();
 

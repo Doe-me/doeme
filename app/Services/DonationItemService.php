@@ -2,17 +2,20 @@
 
 namespace App\Services;
 
+use App\Contracts\Repositories\DonationImagesRepositoryInterface;
 use App\Contracts\Services\DonationItemServiceInterface;
 use App\Contracts\Repositories\DonationItemRepositoryInterface;
 use App\Models\DonationItem;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class DonationItemService implements DonationItemServiceInterface
 {
     public function __construct(
-        private DonationItemRepositoryInterface $donationItemRepository
+        private DonationItemRepositoryInterface $donationItemRepository,
+        private DonationImagesRepositoryInterface $donationImagesRepository,
     ) {}
 
     public function getAvailableItems(array $filters = [], int $perPage = 15): LengthAwarePaginator
@@ -29,8 +32,29 @@ class DonationItemService implements DonationItemServiceInterface
     {
         $data['user_id'] = $user->id;
         $data['status'] = 'available';
+        $data['address'] = data_get($data, 'location.address');
+        $data['latitude'] = data_get($data, 'location.latitude');
+        $data['longitude'] = data_get($data, 'location.longitude');
 
-        return $this->donationItemRepository->create($data);
+        $donation =  $this->donationItemRepository->create($data);
+
+        $disk = env('IMAGE_DISK');
+        foreach (data_get($data, 'images') as $image) {
+            $name = $image->getClientOriginalName();
+
+            $path = $image->storeAs(
+                'images',
+                $name,
+                $disk
+            );
+
+            $this->donationImagesRepository->create([
+                'donation_item_id' => $donation->id,
+                'path' => $path,
+            ]);
+        }
+
+        return $donation;
     }
 
     public function update(DonationItem $item, User $user, array $data): DonationItem
@@ -91,4 +115,3 @@ class DonationItemService implements DonationItemServiceInterface
         return $item->user_id === $user->id;
     }
 }
-
