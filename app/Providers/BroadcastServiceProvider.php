@@ -12,7 +12,9 @@ class BroadcastServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Broadcast::routes();
+        // A API é stateless (Bearer token via Sanctum), então a autorização do
+        // canal usa o mesmo guard das demais rotas em vez do grupo "web" padrão.
+        Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
         require base_path('routes/channels.php');
     }

@@ -13,6 +13,7 @@ services:
       - ./docker/nginx/default.conf:/etc/nginx/sites-available/default
     ports:
       - "8000:80"
+      - "8080:8080"
     networks:
       - doe-me-network
     depends_on:

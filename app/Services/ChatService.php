@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
-use App\Contracts\Services\ChatServiceInterface;
 use App\Contracts\Repositories\ChatRepositoryInterface;
+use App\Contracts\Services\ChatServiceInterface;
+use App\Events\MessageSent;
 use App\Models\Chat;
 use App\Models\ChatMessage;
-use App\Models\User;
 use App\Models\DonationItem;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ChatService implements ChatServiceInterface
@@ -37,16 +38,17 @@ class ChatService implements ChatServiceInterface
         }
 
         $chat = $this->chatRepository->findOrCreateChat($item, $item->user, $interestedUser);
-        
+
         // Adicionar mensagem inicial
-        $this->chatRepository->addMessage($chat, $interestedUser, $message);
+        $chatMessage = $this->chatRepository->addMessage($chat, $interestedUser, $message);
+        event(new MessageSent($chatMessage));
 
         return $chat;
     }
 
     public function getChatMessages(Chat $chat, User $user, int $perPage = 50): LengthAwarePaginator
     {
-        if (!$this->canUserAccess($chat, $user)) {
+        if (! $this->canUserAccess($chat, $user)) {
             throw new \Exception('Você não tem permissão para acessar este chat.');
         }
 
@@ -58,16 +60,19 @@ class ChatService implements ChatServiceInterface
 
     public function sendMessage(Chat $chat, User $user, string $message): ChatMessage
     {
-        if (!$this->canUserAccess($chat, $user)) {
+        if (! $this->canUserAccess($chat, $user)) {
             throw new \Exception('Você não tem permissão para enviar mensagens neste chat.');
         }
 
-        return $this->chatRepository->addMessage($chat, $user, $message);
+        $chatMessage = $this->chatRepository->addMessage($chat, $user, $message);
+        event(new MessageSent($chatMessage));
+
+        return $chatMessage;
     }
 
     public function markMessagesAsRead(Chat $chat, User $user): int
     {
-        if (!$this->canUserAccess($chat, $user)) {
+        if (! $this->canUserAccess($chat, $user)) {
             throw new \Exception('Você não tem permissão para acessar este chat.');
         }
 
@@ -79,4 +84,3 @@ class ChatService implements ChatServiceInterface
         return $this->chatRepository->userParticipatesInChat($chat, $user);
     }
 }
-
