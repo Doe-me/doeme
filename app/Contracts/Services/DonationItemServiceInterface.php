@@ -41,7 +41,7 @@ interface DonationItemServiceInterface
     /**
      * Buscar itens por localização
      */
-    public function findByLocation(float $latitude, float $longitude, int $radius = 10, int $perPage = 15): LengthAwarePaginator;
+    public function findByLocation(float $latitude, float $longitude, float $radius = 10, int $perPage = 15): LengthAwarePaginator;
 
     /**
      * Marcar item como doado
@@ -58,4 +58,3 @@ interface DonationItemServiceInterface
      */
     public function canUserModify(DonationItem $item, User $user): bool;
 }
-
