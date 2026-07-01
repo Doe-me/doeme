@@ -2,11 +2,10 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
 use App\Models\Category;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class CategoryTest extends TestCase
 {
@@ -20,20 +19,20 @@ class CategoryTest extends TestCase
         $response = $this->getJson('/api/categories');
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'data' => [
-                        '*' => [
-                            'id',
-                            'name',
-                            'slug',
-                            'description',
-                            'icon',
-                            'active',
-                            'created_at',
-                            'updated_at'
-                        ]
-                    ]
-                ]);
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'name',
+                        'slug',
+                        'description',
+                        'icon',
+                        'active',
+                        'created_at',
+                        'updated_at',
+                    ],
+                ],
+            ]);
     }
 
     public function test_can_show_category()
@@ -43,51 +42,51 @@ class CategoryTest extends TestCase
         $response = $this->getJson("/api/categories/{$category->id}");
 
         $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'data' => [
-                        'id',
-                        'name',
-                        'slug',
-                        'description',
-                        'icon',
-                        'active',
-                        'created_at',
-                        'updated_at'
-                    ]
-                ]);
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'slug',
+                    'description',
+                    'icon',
+                    'active',
+                    'created_at',
+                    'updated_at',
+                ],
+            ]);
     }
 
     public function test_authenticated_user_can_create_category()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
 
         $categoryData = [
             'name' => 'Nova Categoria',
             'description' => 'Descrição da nova categoria',
-            'icon' => 'new-icon'
+            'icon' => 'new-icon',
         ];
 
         $response = $this->actingAs($user, 'sanctum')
-                        ->postJson('/api/categories', $categoryData);
+            ->postJson('/api/categories', $categoryData);
 
         $response->assertStatus(201)
-                ->assertJsonStructure([
-                    'message',
-                    'data' => [
-                        'id',
-                        'name',
-                        'slug',
-                        'description',
-                        'icon',
-                        'active',
-                        'created_at',
-                        'updated_at'
-                    ]
-                ]);
+            ->assertJsonStructure([
+                'message',
+                'data' => [
+                    'id',
+                    'name',
+                    'slug',
+                    'description',
+                    'icon',
+                    'active',
+                    'created_at',
+                    'updated_at',
+                ],
+            ]);
 
         $this->assertDatabaseHas('categories', [
             'name' => 'Nova Categoria',
-            'slug' => 'nova-categoria'
+            'slug' => 'nova-categoria',
         ]);
     }
 
@@ -95,7 +94,7 @@ class CategoryTest extends TestCase
     {
         $categoryData = [
             'name' => 'Nova Categoria',
-            'description' => 'Descrição da nova categoria'
+            'description' => 'Descrição da nova categoria',
         ];
 
         $response = $this->postJson('/api/categories', $categoryData);
@@ -105,13 +104,12 @@ class CategoryTest extends TestCase
 
     public function test_category_creation_requires_name()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
 
         $response = $this->actingAs($user, 'sanctum')
-                        ->postJson('/api/categories', []);
+            ->postJson('/api/categories', []);
 
         $response->assertStatus(422)
-                ->assertJsonValidationErrors(['name']);
+            ->assertJsonValidationErrors(['name']);
     }
 }
-
