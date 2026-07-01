@@ -258,6 +258,34 @@ eb create production
 eb deploy
 ```
 
+## 🔒 Segurança — CORS e Rate Limiting
+
+### CORS
+
+A variável `CORS_ALLOWED_ORIGINS` controla quais origens podem fazer requisições à API. Em produção, defina no `.env` com a lista exata de domínios:
+
+```env
+CORS_ALLOWED_ORIGINS=https://doeme.com,https://www.doeme.com
+```
+
+Nunca use `*` em produção. O default do `.env.example` (`http://localhost:5173,http://localhost:3000`) é seguro apenas para desenvolvimento local.
+
+Se um futuro app mobile precisar de acesso direto (não via WebView), adicione o esquema do app:
+
+```env
+CORS_ALLOWED_ORIGINS=https://doeme.com,https://www.doeme.com,capacitor://localhost
+```
+
+Cabeçalhos permitidos estão restritos a `Content-Type`, `Authorization`, `X-Requested-With` e `X-XSRF-TOKEN`. Não adicione `*` aos headers em produção.
+
+### Rate Limiting
+
+Rotas de autenticação (`POST /api/auth/login` e `POST /api/auth/register`) têm limite de **5 requisições por minuto por IP**. Requisições acima do limite retornam `429 Too Many Requests`.
+
+O limite global da API é de 60 req/min por usuário autenticado (ou por IP, se não autenticado). Ambos os limites são configurados em `app/Providers/RouteServiceProvider.php`.
+
+Para ajustar os limites sem alterar código, extraia as constantes para variáveis de ambiente no `RouteServiceProvider` se o volume de produção exigir.
+
 ## 🔧 Configurações de Produção
 
 ### 1. Otimizações de Performance
