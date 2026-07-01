@@ -55,6 +55,12 @@ class DonationItemService implements DonationItemServiceInterface
             throw new \Exception('Não é possível excluir um item que já foi doado.');
         }
 
+        // Delete physical image files before removing the item (FK cascade handles DB records)
+        $images = \App\Models\DonationImages::where('donation_item_id', $item->id)->get();
+        foreach ($images as $img) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($img->path);
+        }
+
         return $this->donationItemRepository->delete($item);
     }
 

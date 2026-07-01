@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Contracts\Repositories\DonationImagesRepositoryInterface;
 use App\Contracts\Services\DonationItemServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreDonationItemRequest;
 use App\Http\Requests\Api\UpdateDonationItemRequest;
+use App\Http\Requests\Api\UploadDonationImageRequest;
 use App\Models\DonationItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,7 +21,8 @@ use Illuminate\Http\Request;
 class DonationItemController extends Controller
 {
     public function __construct(
-        private DonationItemServiceInterface $donationItemService
+        private DonationItemServiceInterface $donationItemService,
+        private DonationImagesRepositoryInterface $donationImagesRepository
     ) {}
 
     /**
@@ -258,6 +261,8 @@ class DonationItemController extends Controller
      */
     public function update(UpdateDonationItemRequest $request, DonationItem $donationItem): JsonResponse
     {
+        $this->authorize('update', $donationItem);
+
         try {
             $item = $this->donationItemService->update($donationItem, $request->user(), $request->validated());
 
@@ -308,6 +313,8 @@ class DonationItemController extends Controller
      */
     public function destroy(DonationItem $donationItem, Request $request): JsonResponse
     {
+        $this->authorize('delete', $donationItem);
+
         try {
             $this->donationItemService->delete($donationItem, $request->user());
 
@@ -367,5 +374,73 @@ class DonationItemController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/donation-items/{donationItem}/images",
+     *     summary="Upload de imagens para um item de doação",
+     *     tags={"Donation Items"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(
+     *         name="donationItem",
+     *         in="path",
+     *         required=true,
+     *
+     *         @OA\Schema(type="integer")
+     *     ),
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *
+     *             @OA\Schema(
+     *
+     *                 @OA\Property(property="images[]", type="array", @OA\Items(type="string", format="binary"))
+     *             )
+     *         )
+     *     ),
+     *
+     *     @OA\Response(
+     *         response=201,
+     *         description="Imagens enviadas com sucesso"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Sem permissão"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Limite ou tipo inválido"
+     *     )
+     * )
+     */
+    public function uploadImages(UploadDonationImageRequest $request, DonationItem $donationItem): JsonResponse
+    {
+        if ($request->user()->id !== $donationItem->user_id) {
+            return response()->json(['error' => 'Sem permissão.'], 403);
+        }
+
+        $existingCount = $this->donationImagesRepository->countByItemId($donationItem->id);
+        $newCount = count($request->file('images', []));
+
+        if ($existingCount + $newCount > 5) {
+            return response()->json(['error' => 'Limite de 5 imagens por item excedido.'], 422);
+        }
+
+        $saved = [];
+        foreach ($request->file('images') as $file) {
+            $path = $file->store("donations/{$donationItem->id}", 'public');
+            $image = $this->donationImagesRepository->create([
+                'donation_item_id' => $donationItem->id,
+                'path' => $path,
+            ]);
+            $saved[] = $image;
+        }
+
+        return response()->json(['message' => 'Imagens enviadas com sucesso', 'data' => $saved], 201);
     }
 }

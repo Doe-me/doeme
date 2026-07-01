@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Contracts\Services\ChatServiceInterface;
-use App\Http\Requests\Api\StoreChatRequest;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\SendMessageRequest;
+use App\Http\Requests\Api\StoreChatRequest;
 use App\Models\Chat;
 use App\Models\DonationItem;
 use Illuminate\Http\JsonResponse;
@@ -29,20 +29,27 @@ class ChatController extends Controller
      *     summary="Listar meus chats",
      *     tags={"Chat"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Parameter(
      *         name="page",
      *         in="query",
+     *
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="per_page",
      *         in="query",
+     *
      *         @OA\Schema(type="integer", example=20)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Lista de chats do usuário",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="data", type="array", @OA\Items(
      *                 @OA\Property(property="id", type="integer"),
      *                 @OA\Property(property="donation_item", ref="#/components/schemas/DonationItem"),
@@ -64,7 +71,7 @@ class ChatController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -75,18 +82,24 @@ class ChatController extends Controller
      *     summary="Iniciar novo chat",
      *     tags={"Chat"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"donation_item_id","message"},
+     *
      *             @OA\Property(property="donation_item_id", type="integer", example=1),
      *             @OA\Property(property="message", type="string", example="Olá, tenho interesse neste item!")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=201,
      *         description="Chat iniciado com sucesso",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Chat iniciado com sucesso"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="integer"),
@@ -96,9 +109,11 @@ class ChatController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="Erro ao iniciar chat",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/Error")
      *     )
      * )
@@ -115,12 +130,12 @@ class ChatController extends Controller
 
             return response()->json([
                 'message' => 'Chat iniciado com sucesso',
-                'data' => $chat
+                'data' => $chat,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Erro ao iniciar chat',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
@@ -131,26 +146,35 @@ class ChatController extends Controller
      *     summary="Obter mensagens do chat",
      *     tags={"Chat"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\Parameter(
      *         name="page",
      *         in="query",
+     *
      *         @OA\Schema(type="integer", example=1)
      *     ),
+     *
      *     @OA\Parameter(
      *         name="per_page",
      *         in="query",
+     *
      *         @OA\Schema(type="integer", example=50)
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Mensagens do chat",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="chat", type="object",
      *                 @OA\Property(property="id", type="integer"),
      *                 @OA\Property(property="donation_item", ref="#/components/schemas/DonationItem"),
@@ -168,27 +192,31 @@ class ChatController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=403,
      *         description="Sem permissão para acessar este chat",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/Error")
      *     )
      * )
      */
     public function show(Chat $chat, Request $request): JsonResponse
     {
+        $this->authorize('view', $chat);
+
         try {
             $perPage = $request->get('per_page', 50);
             $messages = $this->chatService->getChatMessages($chat, $request->user(), $perPage);
 
             return response()->json([
                 'chat' => $chat,
-                'messages' => $messages
+                'messages' => $messages,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Erro ao acessar chat',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 403);
         }
     }
@@ -199,23 +227,31 @@ class ChatController extends Controller
      *     summary="Enviar mensagem",
      *     tags={"Chat"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
      *         required=true,
+     *
      *         @OA\Schema(type="integer")
      *     ),
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"message"},
+     *
      *             @OA\Property(property="message", type="string", example="Quando posso buscar o item?")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=201,
      *         description="Mensagem enviada com sucesso",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Mensagem enviada com sucesso"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="integer"),
@@ -225,28 +261,31 @@ class ChatController extends Controller
      *             )
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=403,
      *         description="Sem permissão para enviar mensagem neste chat",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/Error")
      *     )
      * )
      */
     public function sendMessage(SendMessageRequest $request, Chat $chat): JsonResponse
     {
+        $this->authorize('sendMessage', $chat);
+
         try {
             $message = $this->chatService->sendMessage($chat, $request->user(), $request->message);
 
             return response()->json([
                 'message' => 'Mensagem enviada com sucesso',
-                'data' => $message
+                'data' => $message,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Erro ao enviar mensagem',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 403);
         }
     }
 }
-

@@ -80,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Itens de doação
     Route::apiResource('donation-items', DonationItemController::class)->except(['index', 'show']);
     Route::get('/my-donations', [DonationItemController::class, 'myDonations']);
+    Route::post('/donation-items/{donationItem}/images', [DonationItemController::class, 'uploadImages']);
 
     // Chat
     Route::apiResource('chats', ChatController::class)->only(['index', 'store', 'show']);
