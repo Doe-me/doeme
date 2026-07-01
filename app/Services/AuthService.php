@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
-use App\Contracts\Services\AuthServiceInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
+use App\Contracts\Services\AuthServiceInterface;
 use App\Models\User;
-use Laravel\Socialite\Contracts\User as SocialiteUser;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Laravel\Socialite\Contracts\User as SocialiteUser;
 
 class AuthService implements AuthServiceInterface
 {
@@ -19,7 +20,7 @@ class AuthService implements AuthServiceInterface
     public function register(array $data): array
     {
         $data['password'] = Hash::make($data['password']);
-        
+
         $user = $this->userRepository->create($data);
         $token = $this->generateAccessToken($user, 'registration_token');
 
@@ -32,7 +33,7 @@ class AuthService implements AuthServiceInterface
 
     public function login(array $credentials): array
     {
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
                 'email' => ['As credenciais fornecidas estão incorretas.'],
             ]);
@@ -67,31 +68,34 @@ class AuthService implements AuthServiceInterface
         // Tentar encontrar usuário por ID social
         $user = $this->userRepository->findBySocialId($provider, $socialUser->getId());
 
-        if (!$user) {
+        if (! $user) {
             // Tentar encontrar por email
             $user = $this->userRepository->findByEmail($socialUser->getEmail());
-            
+
             if ($user) {
                 // Atualizar com dados sociais
                 $socialData = [
-                    $provider . '_id' => $socialUser->getId(),
+                    $provider.'_id' => $socialUser->getId(),
                 ];
                 $user = $this->userRepository->update($user, $socialData);
             } else {
-                // Criar novo usuário
+                // Criar novo usuário. A coluna "password" é NOT NULL mesmo para
+                // contas só-social, então geramos uma senha aleatória que o
+                // usuário nunca vai precisar usar (login é sempre via provider).
                 $userData = [
                     'name' => $socialUser->getName(),
                     'email' => $socialUser->getEmail(),
+                    'password' => Hash::make(Str::random(32)),
                     'avatar' => $socialUser->getAvatar(),
-                    $provider . '_id' => $socialUser->getId(),
+                    $provider.'_id' => $socialUser->getId(),
                     'email_verified_at' => now(),
                 ];
-                
+
                 $user = $this->userRepository->create($userData);
             }
         }
 
-        $token = $this->generateAccessToken($user, $provider . '_token');
+        $token = $this->generateAccessToken($user, $provider.'_token');
 
         return [
             'user' => $user,
@@ -108,7 +112,7 @@ class AuthService implements AuthServiceInterface
     public function revokeAllTokens(User $user): bool
     {
         $user->tokens()->delete();
+
         return true;
     }
 }
-
