@@ -41,7 +41,7 @@ interface DonationItemRepositoryInterface
     /**
      * Buscar itens por localização
      */
-    public function findByLocation(float $latitude, float $longitude, int $radius = 10, int $perPage = 15): LengthAwarePaginator;
+    public function findByLocation(float $latitude, float $longitude, float $radius = 10, int $perPage = 15): LengthAwarePaginator;
 
     /**
      * Buscar itens por categoria
@@ -58,4 +58,3 @@ interface DonationItemRepositoryInterface
      */
     public function getRelatedItems(DonationItem $item, int $limit = 5): \Illuminate\Database\Eloquent\Collection;
 }
-
