@@ -261,6 +261,8 @@ class DonationItemController extends Controller
      */
     public function update(UpdateDonationItemRequest $request, DonationItem $donationItem): JsonResponse
     {
+        $this->authorize('update', $donationItem);
+
         try {
             $item = $this->donationItemService->update($donationItem, $request->user(), $request->validated());
 
@@ -311,6 +313,8 @@ class DonationItemController extends Controller
      */
     public function destroy(DonationItem $donationItem, Request $request): JsonResponse
     {
+        $this->authorize('delete', $donationItem);
+
         try {
             $this->donationItemService->delete($donationItem, $request->user());
 
