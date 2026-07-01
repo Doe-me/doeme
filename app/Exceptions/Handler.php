@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -26,5 +28,19 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    /**
+     * Render an exception into an HTTP response.
+     */
+    public function render($request, Throwable $e)
+    {
+        if ($e instanceof AuthorizationException || $e instanceof AccessDeniedHttpException) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'This action is unauthorized.'], 403);
+            }
+        }
+
+        return parent::render($request, $e);
     }
 }
