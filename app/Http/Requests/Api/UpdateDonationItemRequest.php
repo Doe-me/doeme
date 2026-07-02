@@ -60,4 +60,3 @@ class UpdateDonationItemRequest extends FormRequest
         ];
     }
 }
-

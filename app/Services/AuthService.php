@@ -2,13 +2,15 @@
 
 namespace App\Services;
 
-use App\Contracts\Services\AuthServiceInterface;
 use App\Contracts\Repositories\UserRepositoryInterface;
+use App\Contracts\Services\AuthServiceInterface;
 use App\Models\User;
-use Laravel\Socialite\Contracts\User as SocialiteUser;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Laravel\Socialite\Contracts\User as SocialiteUser;
 
 class AuthService implements AuthServiceInterface
 {
@@ -19,7 +21,7 @@ class AuthService implements AuthServiceInterface
     public function register(array $data): array
     {
         $data['password'] = Hash::make($data['password']);
-        
+
         $user = $this->userRepository->create($data);
         $token = $this->generateAccessToken($user, 'registration_token');
 
@@ -32,7 +34,7 @@ class AuthService implements AuthServiceInterface
 
     public function login(array $credentials): array
     {
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
                 'email' => ['As credenciais fornecidas estão incorretas.'],
             ]);
@@ -67,14 +69,14 @@ class AuthService implements AuthServiceInterface
         // Tentar encontrar usuário por ID social
         $user = $this->userRepository->findBySocialId($provider, $socialUser->getId());
 
-        if (!$user) {
+        if (! $user) {
             // Tentar encontrar por email
             $user = $this->userRepository->findByEmail($socialUser->getEmail());
-            
+
             if ($user) {
                 // Atualizar com dados sociais
                 $socialData = [
-                    $provider . '_id' => $socialUser->getId(),
+                    $provider.'_id' => $socialUser->getId(),
                 ];
                 $user = $this->userRepository->update($user, $socialData);
             } else {
@@ -83,15 +85,15 @@ class AuthService implements AuthServiceInterface
                     'name' => $socialUser->getName(),
                     'email' => $socialUser->getEmail(),
                     'avatar' => $socialUser->getAvatar(),
-                    $provider . '_id' => $socialUser->getId(),
+                    $provider.'_id' => $socialUser->getId(),
                     'email_verified_at' => now(),
                 ];
-                
+
                 $user = $this->userRepository->create($userData);
             }
         }
 
-        $token = $this->generateAccessToken($user, $provider . '_token');
+        $token = $this->generateAccessToken($user, $provider.'_token');
 
         return [
             'user' => $user,
@@ -108,7 +110,45 @@ class AuthService implements AuthServiceInterface
     public function revokeAllTokens(User $user): bool
     {
         $user->tokens()->delete();
+
         return true;
     }
-}
 
+    public function changePassword(User $user, string $currentPassword, string $newPassword): void
+    {
+        if (! Hash::check($currentPassword, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['A senha atual está incorreta.'],
+            ]);
+        }
+        $this->userRepository->update($user, ['password' => Hash::make($newPassword)]);
+    }
+
+    public function updateAvatar(User $user, UploadedFile $file): User
+    {
+        $path = $file->store('avatars', 'public');
+
+        return $this->userRepository->update($user, ['avatar' => Storage::url($path)]);
+    }
+
+    public function updateNotificationPreferences(User $user, array $data): User
+    {
+        return $this->userRepository->update($user, ['notification_preferences' => $data]);
+    }
+
+    public function updatePrivacySettings(User $user, array $data): User
+    {
+        return $this->userRepository->update($user, ['privacy_settings' => $data]);
+    }
+
+    public function deleteAccount(User $user, string $password): void
+    {
+        if (! Hash::check($password, $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => ['Senha incorreta.'],
+            ]);
+        }
+        $this->revokeAllTokens($user);
+        $user->delete();
+    }
+}

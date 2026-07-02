@@ -3,6 +3,7 @@
 namespace App\Contracts\Services;
 
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
 interface AuthServiceInterface
@@ -41,5 +42,14 @@ interface AuthServiceInterface
      * Revogar todos os tokens do usuário
      */
     public function revokeAllTokens(User $user): bool;
-}
 
+    public function changePassword(User $user, string $currentPassword, string $newPassword): void;
+
+    public function updateAvatar(User $user, UploadedFile $file): User;
+
+    public function updateNotificationPreferences(User $user, array $data): User;
+
+    public function updatePrivacySettings(User $user, array $data): User;
+
+    public function deleteAccount(User $user, string $password): void;
+}

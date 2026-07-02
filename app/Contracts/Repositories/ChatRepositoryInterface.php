@@ -4,8 +4,8 @@ namespace App\Contracts\Repositories;
 
 use App\Models\Chat;
 use App\Models\ChatMessage;
-use App\Models\User;
 use App\Models\DonationItem;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface ChatRepositoryInterface
@@ -55,4 +55,3 @@ interface ChatRepositoryInterface
      */
     public function updateLastMessageAt(Chat $chat): Chat;
 }
-

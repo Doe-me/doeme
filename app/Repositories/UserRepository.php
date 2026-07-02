@@ -25,13 +25,15 @@ class UserRepository implements UserRepositoryInterface
 
     public function findBySocialId(string $provider, string $socialId): ?User
     {
-        $column = $provider . '_id';
+        $column = $provider.'_id';
+
         return User::where($column, $socialId)->first();
     }
 
     public function update(User $user, array $data): User
     {
         $user->update($data);
+
         return $user->fresh();
     }
 
@@ -53,7 +55,7 @@ class UserRepository implements UserRepositoryInterface
             'average_rating' => $user->average_rating,
             'total_reviews' => $user->total_reviews,
             'active_chats' => $user->donorChats()
-                ->orWhere(function($query) use ($user) {
+                ->orWhere(function ($query) use ($user) {
                     $query->where('interested_user_id', $user->id);
                 })
                 ->count(),
@@ -63,4 +65,3 @@ class UserRepository implements UserRepositoryInterface
         ];
     }
 }
-

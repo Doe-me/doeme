@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Contracts\Services\ReviewServiceInterface;
 use App\Contracts\Repositories\ReviewRepositoryInterface;
+use App\Contracts\Services\ReviewServiceInterface;
+use App\Models\DonationItem;
 use App\Models\Review;
 use App\Models\User;
-use App\Models\DonationItem;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ReviewService implements ReviewServiceInterface
@@ -30,7 +30,7 @@ class ReviewService implements ReviewServiceInterface
         $donationItem = DonationItem::findOrFail($data['donation_item_id']);
         $reviewedUser = User::findOrFail($data['reviewed_user_id']);
 
-        if (!$this->canUserReview($donationItem, $reviewer, $reviewedUser)) {
+        if (! $this->canUserReview($donationItem, $reviewer, $reviewedUser)) {
             throw new \Exception('Você não pode avaliar este usuário para este item.');
         }
 
@@ -46,7 +46,7 @@ class ReviewService implements ReviewServiceInterface
 
     public function update(Review $review, User $user, array $data): Review
     {
-        if (!$this->canUserModify($review, $user)) {
+        if (! $this->canUserModify($review, $user)) {
             throw new \Exception('Você não tem permissão para modificar esta avaliação.');
         }
 
@@ -63,7 +63,7 @@ class ReviewService implements ReviewServiceInterface
 
     public function delete(Review $review, User $user): bool
     {
-        if (!$this->canUserModify($review, $user)) {
+        if (! $this->canUserModify($review, $user)) {
             throw new \Exception('Você não tem permissão para excluir esta avaliação.');
         }
 
@@ -102,11 +102,10 @@ class ReviewService implements ReviewServiceInterface
     private function updateUserRatingStats(User $user): void
     {
         $stats = $this->reviewRepository->getUserReviewStats($user);
-        
+
         $user->update([
             'average_rating' => $stats['average_rating'],
             'total_reviews' => $stats['total_reviews'],
         ]);
     }
 }
-

@@ -19,7 +19,7 @@ class DonationItemFactory extends Factory
             'title' => fake()->sentence(3),
             'description' => fake()->paragraph(),
             'images' => [],
-            'condition' => fake()->randomElement(['Novo', 'Usado - Bom estado', 'Usado - Aceitável']),
+            'condition' => fake()->randomElement(['Novo', 'Usado - Excelente estado', 'Usado - Bom estado', 'Usado - Estado regular']),
             'location' => fake()->city().', '.fake()->stateAbbr(),
             'latitude' => null,
             'longitude' => null,

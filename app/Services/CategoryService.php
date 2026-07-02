@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Contracts\Services\CategoryServiceInterface;
 use App\Contracts\Repositories\CategoryRepositoryInterface;
+use App\Contracts\Services\CategoryServiceInterface;
 use App\Models\Category;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 
 class CategoryService implements CategoryServiceInterface
@@ -28,12 +28,12 @@ class CategoryService implements CategoryServiceInterface
     public function create(array $data): Category
     {
         // Gerar slug automaticamente se não fornecido
-        if (!isset($data['slug'])) {
+        if (! isset($data['slug'])) {
             $data['slug'] = Str::slug($data['name']);
         }
 
         // Definir como ativa por padrão
-        if (!isset($data['active'])) {
+        if (! isset($data['active'])) {
             $data['active'] = true;
         }
 
@@ -52,7 +52,7 @@ class CategoryService implements CategoryServiceInterface
 
     public function delete(Category $category): bool
     {
-        if (!$this->canDelete($category)) {
+        if (! $this->canDelete($category)) {
             throw new \Exception('Não é possível excluir esta categoria pois ela possui itens associados.');
         }
 
@@ -66,7 +66,6 @@ class CategoryService implements CategoryServiceInterface
 
     public function canDelete(Category $category): bool
     {
-        return !$this->categoryRepository->isInUse($category);
+        return ! $this->categoryRepository->isInUse($category);
     }
 }
-

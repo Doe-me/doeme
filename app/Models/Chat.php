@@ -68,4 +68,3 @@ class Chat extends Model
         return $this->donor_id == $userId || $this->interested_user_id == $userId;
     }
 }
-
