@@ -37,4 +37,3 @@ class Category extends Model
         return $query->where('active', true);
     }
 }
-

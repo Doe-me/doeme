@@ -60,4 +60,3 @@ class StoreDonationItemRequest extends FormRequest
         ];
     }
 }
-

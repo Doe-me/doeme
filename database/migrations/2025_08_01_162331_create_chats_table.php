@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('interested_user_id')->constrained('users')->onDelete('cascade');
             $table->timestamp('last_message_at')->nullable();
             $table->timestamps();
-            
+
             // Evita chats duplicados entre os mesmos usuários para o mesmo item
             $table->unique(['donation_item_id', 'donor_id', 'interested_user_id']);
         });

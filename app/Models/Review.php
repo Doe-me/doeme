@@ -61,4 +61,3 @@ class Review extends Model
         return $query->where('reviewed_user_id', $userId);
     }
 }
-

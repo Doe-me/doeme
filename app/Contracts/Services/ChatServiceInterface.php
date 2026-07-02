@@ -4,8 +4,8 @@ namespace App\Contracts\Services;
 
 use App\Models\Chat;
 use App\Models\ChatMessage;
-use App\Models\User;
 use App\Models\DonationItem;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface ChatServiceInterface
@@ -45,4 +45,3 @@ interface ChatServiceInterface
      */
     public function canUserAccess(Chat $chat, User $user): bool;
 }
-

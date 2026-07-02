@@ -33,6 +33,16 @@ interface AuthServiceInterface
     public function handleSocialLogin(string $provider, SocialiteUser $socialUser): array;
 
     /**
+     * Atualizar endereço do usuário
+     */
+    public function updateAddress(User $user, array $data): User;
+
+    /**
+     * Alterar senha do usuário
+     */
+    public function changePassword(User $user, string $currentPassword, string $newPassword): void;
+
+    /**
      * Gerar token de acesso
      */
     public function generateAccessToken(User $user, string $tokenName = 'auth_token'): string;
@@ -42,4 +52,3 @@ interface AuthServiceInterface
      */
     public function revokeAllTokens(User $user): bool;
 }
-

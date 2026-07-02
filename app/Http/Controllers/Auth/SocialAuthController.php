@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use App\Contracts\Services\AuthServiceInterface;
-use Laravel\Socialite\Facades\Socialite;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Laravel\Socialite\Facades\Socialite;
 
 /**
  * @OA\Tag(
@@ -25,12 +25,15 @@ class SocialAuthController extends Controller
      *     path="/api/auth/{provider}/redirect",
      *     summary="Redirecionar para provedor OAuth",
      *     tags={"Social Authentication"},
+     *
      *     @OA\Parameter(
      *         name="provider",
      *         in="path",
      *         required=true,
+     *
      *         @OA\Schema(type="string", enum={"google", "facebook"})
      *     ),
+     *
      *     @OA\Response(
      *         response=302,
      *         description="Redirecionamento para o provedor OAuth"
@@ -47,25 +50,32 @@ class SocialAuthController extends Controller
      *     path="/api/auth/{provider}/callback",
      *     summary="Callback do provedor OAuth",
      *     tags={"Social Authentication"},
+     *
      *     @OA\Parameter(
      *         name="provider",
      *         in="path",
      *         required=true,
+     *
      *         @OA\Schema(type="string", enum={"google", "facebook"})
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Login social realizado com sucesso",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Login realizado com sucesso"),
      *             @OA\Property(property="user", ref="#/components/schemas/User"),
      *             @OA\Property(property="token", type="string", example="1|abc123..."),
      *             @OA\Property(property="token_type", type="string", example="Bearer")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=400,
      *         description="Erro na autenticação social",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/Error")
      *     )
      * )
@@ -85,9 +95,8 @@ class SocialAuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Erro na autenticação social',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
 }
-

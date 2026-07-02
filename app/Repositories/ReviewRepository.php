@@ -3,9 +3,9 @@
 namespace App\Repositories;
 
 use App\Contracts\Repositories\ReviewRepositoryInterface;
+use App\Models\DonationItem;
 use App\Models\Review;
 use App\Models\User;
-use App\Models\DonationItem;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ReviewRepository implements ReviewRepositoryInterface
@@ -23,6 +23,7 @@ class ReviewRepository implements ReviewRepositoryInterface
     public function update(Review $review, array $data): Review
     {
         $review->update($data);
+
         return $review->fresh(['reviewer', 'reviewedUser', 'donationItem']);
     }
 
@@ -75,10 +76,10 @@ class ReviewRepository implements ReviewRepositoryInterface
         }
 
         // Verificar se o reviewer participou da doação
-        $participatedInDonation = $item->user_id === $reviewer->id || 
+        $participatedInDonation = $item->user_id === $reviewer->id ||
                                  $item->donated_to_user_id === $reviewer->id;
 
-        if (!$participatedInDonation) {
+        if (! $participatedInDonation) {
             return false;
         }
 
@@ -108,8 +109,7 @@ class ReviewRepository implements ReviewRepositoryInterface
                 '3' => $reviews->where('rating', 3)->count(),
                 '2' => $reviews->where('rating', 2)->count(),
                 '1' => $reviews->where('rating', 1)->count(),
-            ]
+            ],
         ];
     }
 }
-
