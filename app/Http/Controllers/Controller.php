@@ -11,26 +11,27 @@ use Illuminate\Routing\Controller as BaseController;
  *     title="Doe Me API",
  *     version="1.0.0",
  *     description="API para o aplicativo Doe Me - plataforma de doações que conecta pessoas dispostas a doar bens usados com pessoas que precisam deles",
+ *
  *     @OA\Contact(
  *         email="contato@doeme.com",
  *         name="Equipe Doe Me"
  *     ),
+ *
  *     @OA\License(
  *         name="MIT",
  *         url="https://opensource.org/licenses/MIT"
  *     )
  * )
- * 
+ *
  * @OA\Server(
  *     url="http://localhost:8000",
  *     description="Servidor de desenvolvimento"
  * )
- * 
  * @OA\Server(
  *     url="https://api.doeme.com",
  *     description="Servidor de produção"
  * )
- * 
+ *
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",
  *     type="http",
@@ -38,10 +39,11 @@ use Illuminate\Routing\Controller as BaseController;
  *     bearerFormat="JWT",
  *     description="Token de autenticação Bearer"
  * )
- * 
+ *
  * @OA\Schema(
  *     schema="Category",
  *     type="object",
+ *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="Móveis"),
  *     @OA\Property(property="slug", type="string", example="moveis"),
@@ -51,10 +53,11 @@ use Illuminate\Routing\Controller as BaseController;
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
- * 
+ *
  * @OA\Schema(
  *     schema="User",
  *     type="object",
+ *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="João Silva"),
  *     @OA\Property(property="email", type="string", example="joao@example.com"),
@@ -66,10 +69,11 @@ use Illuminate\Routing\Controller as BaseController;
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
- * 
+ *
  * @OA\Schema(
  *     schema="DonationItem",
  *     type="object",
+ *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="title", type="string", example="Sofá 3 lugares"),
  *     @OA\Property(property="description", type="string", example="Sofá em bom estado, cor azul"),
@@ -84,10 +88,11 @@ use Illuminate\Routing\Controller as BaseController;
  *     @OA\Property(property="created_at", type="string", format="date-time"),
  *     @OA\Property(property="updated_at", type="string", format="date-time")
  * )
- * 
+ *
  * @OA\Schema(
  *     schema="Error",
  *     type="object",
+ *
  *     @OA\Property(property="error", type="string", example="Mensagem de erro"),
  *     @OA\Property(property="messages", type="object", example={"field": {"Mensagem de validação"}})
  * )

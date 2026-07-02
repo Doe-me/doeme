@@ -2,9 +2,9 @@
 
 namespace App\Contracts\Services;
 
+use App\Models\DonationItem;
 use App\Models\Review;
 use App\Models\User;
-use App\Models\DonationItem;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface ReviewServiceInterface
@@ -49,4 +49,3 @@ interface ReviewServiceInterface
      */
     public function canUserModify(Review $review, User $user): bool;
 }
-

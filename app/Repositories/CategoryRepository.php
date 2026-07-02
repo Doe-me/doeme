@@ -4,8 +4,8 @@ namespace App\Repositories;
 
 use App\Contracts\Repositories\CategoryRepositoryInterface;
 use App\Models\Category;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
@@ -27,6 +27,7 @@ class CategoryRepository implements CategoryRepositoryInterface
     public function update(Category $category, array $data): Category
     {
         $category->update($data);
+
         return $category->fresh();
     }
 
@@ -50,4 +51,3 @@ class CategoryRepository implements CategoryRepositoryInterface
         return $category->donationItems()->exists();
     }
 }
-

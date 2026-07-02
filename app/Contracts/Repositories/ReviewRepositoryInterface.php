@@ -2,9 +2,9 @@
 
 namespace App\Contracts\Repositories;
 
+use App\Models\DonationItem;
 use App\Models\Review;
 use App\Models\User;
-use App\Models\DonationItem;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface ReviewRepositoryInterface
@@ -54,4 +54,3 @@ interface ReviewRepositoryInterface
      */
     public function getUserReviewStats(User $user): array;
 }
-

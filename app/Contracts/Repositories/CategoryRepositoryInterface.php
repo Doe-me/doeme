@@ -3,8 +3,8 @@
 namespace App\Contracts\Repositories;
 
 use App\Models\Category;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 interface CategoryRepositoryInterface
 {
@@ -48,4 +48,3 @@ interface CategoryRepositoryInterface
      */
     public function isInUse(Category $category): bool;
 }
-

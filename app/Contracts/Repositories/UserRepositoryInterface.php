@@ -47,4 +47,3 @@ interface UserRepositoryInterface
      */
     public function getUserStats(User $user): array;
 }
-
