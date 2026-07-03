@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Contracts\Services\AuthServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ChangePasswordRequest;
+use App\Http\Requests\Auth\DeleteAccountRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\UpdateAddressRequest;
+use App\Http\Requests\Auth\UpdateNotificationPreferencesRequest;
+use App\Http\Requests\Auth\UpdatePrivacySettingsRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -276,6 +279,19 @@ class AuthController extends Controller
         }
     }
 
+    public function updateAvatar(Request $request): JsonResponse
+    {
+        $request->validate(['avatar' => ['required', 'image', 'max:2048']]);
+
+        try {
+            $user = $this->authService->updateAvatar($request->user(), $request->file('avatar'));
+
+            return response()->json(['message' => 'Avatar atualizado com sucesso', 'user' => $user]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao atualizar avatar', 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
         try {
@@ -285,19 +301,89 @@ class AuthController extends Controller
                 $request->input('password')
             );
 
-            return response()->json([
-                'message' => 'Senha alterada com sucesso',
-            ]);
+            return response()->json(['message' => 'Senha alterada com sucesso']);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'message' => 'Erro de validação',
-                'errors' => $e->errors(),
-            ], 422);
+            return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getNotificationPreferences(Request $request): JsonResponse
+    {
+        $defaults = [
+            'email_new_message' => true,
+            'email_donation_interest' => true,
+            'email_newsletter' => false,
+            'push_new_message' => true,
+            'push_donation_interest' => true,
+            'push_new_reviews' => false,
+        ];
+
+        $prefs = array_merge($defaults, $request->user()->notification_preferences ?? []);
+
+        return response()->json(['notification_preferences' => $prefs]);
+    }
+
+    public function updateNotificationPreferences(UpdateNotificationPreferencesRequest $request): JsonResponse
+    {
+        try {
+            $user = $this->authService->updateNotificationPreferences($request->user(), $request->validated());
+
+            return response()->json(['message' => 'Preferências atualizadas', 'notification_preferences' => $user->notification_preferences]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getPrivacySettings(Request $request): JsonResponse
+    {
+        $defaults = [
+            'show_email' => false,
+            'show_phone' => false,
+            'show_location' => true,
+            'allow_messages' => true,
+            'online_status' => true,
+        ];
+
+        $settings = array_merge($defaults, $request->user()->privacy_settings ?? []);
+
+        return response()->json(['privacy_settings' => $settings]);
+    }
+
+    public function updatePrivacySettings(UpdatePrivacySettingsRequest $request): JsonResponse
+    {
+        try {
+            $user = $this->authService->updatePrivacySettings($request->user(), $request->validated());
+
+            return response()->json(['message' => 'Configurações atualizadas', 'privacy_settings' => $user->privacy_settings]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getConnectedAccounts(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'connected_accounts' => [
+                'google' => ! empty($user->google_id),
+                'facebook' => ! empty($user->facebook_id),
+            ],
+        ]);
+    }
+
+    public function deleteAccount(DeleteAccountRequest $request): JsonResponse
+    {
+        try {
+            $this->authService->deleteAccount($request->user(), $request->input('password'));
+
+            return response()->json(['message' => 'Conta excluída com sucesso']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
         }
     }
 }

@@ -5,8 +5,10 @@ namespace App\Services;
 use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Contracts\Services\AuthServiceInterface;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
@@ -128,5 +130,33 @@ class AuthService implements AuthServiceInterface
         $user->tokens()->delete();
 
         return true;
+    }
+
+    public function updateAvatar(User $user, UploadedFile $file): User
+    {
+        $path = $file->store('avatars', 'public');
+
+        return $this->userRepository->update($user, ['avatar' => Storage::url($path)]);
+    }
+
+    public function updateNotificationPreferences(User $user, array $data): User
+    {
+        return $this->userRepository->update($user, ['notification_preferences' => $data]);
+    }
+
+    public function updatePrivacySettings(User $user, array $data): User
+    {
+        return $this->userRepository->update($user, ['privacy_settings' => $data]);
+    }
+
+    public function deleteAccount(User $user, string $password): void
+    {
+        if (! Hash::check($password, $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => ['Senha incorreta.'],
+            ]);
+        }
+        $this->revokeAllTokens($user);
+        $user->delete();
     }
 }

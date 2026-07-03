@@ -73,7 +73,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/user', [AuthController::class, 'user']);
         Route::put('/profile', [AuthController::class, 'updateProfile']);
         Route::put('/address', [AuthController::class, 'updateAddress']);
+        Route::post('/avatar', [AuthController::class, 'updateAvatar']);
         Route::post('/change-password', [AuthController::class, 'changePassword']);
+        Route::get('/notification-preferences', [AuthController::class, 'getNotificationPreferences']);
+        Route::put('/notification-preferences', [AuthController::class, 'updateNotificationPreferences']);
+        Route::get('/privacy-settings', [AuthController::class, 'getPrivacySettings']);
+        Route::put('/privacy-settings', [AuthController::class, 'updatePrivacySettings']);
+        Route::get('/connected-accounts', [AuthController::class, 'getConnectedAccounts']);
+        Route::delete('/account', [AuthController::class, 'deleteAccount']);
     });
 
     // Categorias (apenas admin pode criar/editar/deletar)

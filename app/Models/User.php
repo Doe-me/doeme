@@ -36,6 +36,8 @@ class User extends Authenticatable
         'neighborhood',
         'city',
         'state',
+        'notification_preferences',
+        'privacy_settings',
     ];
 
     /**
@@ -57,6 +59,8 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_admin' => 'boolean',
+        'notification_preferences' => 'array',
+        'privacy_settings' => 'array',
     ];
 
     /**
