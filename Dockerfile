@@ -41,9 +41,12 @@ COPY docker/nginx/default.conf /etc/nginx/sites-available/default
 # Configurar Supervisor
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Entrypoint: garante composer install se vendor for sobrescrito por bind mount
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Expor porta
 EXPOSE 80
 
-# Comando para iniciar os serviços
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+ENTRYPOINT ["/entrypoint.sh"]
 

@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Contracts\Repositories\DonationItemRepositoryInterface;
 use App\Contracts\Services\DonationItemServiceInterface;
+use App\Models\DonationImages;
 use App\Models\DonationItem;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class DonationItemService implements DonationItemServiceInterface
 {
@@ -56,9 +58,9 @@ class DonationItemService implements DonationItemServiceInterface
         }
 
         // Delete physical image files before removing the item (FK cascade handles DB records)
-        $images = \App\Models\DonationImages::where('donation_item_id', $item->id)->get();
+        $images = DonationImages::where('donation_item_id', $item->id)->get();
         foreach ($images as $img) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($img->path);
+            Storage::disk('public')->delete($img->path);
         }
 
         return $this->donationItemRepository->delete($item);
