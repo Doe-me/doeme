@@ -15,7 +15,7 @@ class SocialAuthTest extends TestCase
 
     private function mockSocialiteUser(array $attributes = []): SocialiteUser
     {
-        $socialiteUser = new SocialiteUser();
+        $socialiteUser = new SocialiteUser;
         $socialiteUser->map(array_merge([
             'id' => '123456789',
             'name' => 'Doador Google',
@@ -81,7 +81,7 @@ class SocialAuthTest extends TestCase
             'email' => 'ja.cadastrado@example.com',
             'google_id' => '123456789',
         ]);
-        $this->assertDatabaseCount('users', 1);
+        $this->assertEquals(1, \App\Models\User::where('email', 'ja.cadastrado@example.com')->count());
     }
 
     public function test_callback_redirects_to_frontend_with_error_when_user_denies_permission(): void

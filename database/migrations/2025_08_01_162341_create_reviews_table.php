@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('rating')->unsigned(); // 1-5 estrelas
             $table->text('comment')->nullable();
             $table->timestamps();
-            
+
             // Evita avaliações duplicadas
             $table->unique(['donation_item_id', 'reviewer_id', 'reviewed_user_id']);
         });

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Contracts\Services\DonationItemServiceInterface;
 use App\Contracts\Repositories\DonationItemRepositoryInterface;
+use App\Contracts\Services\DonationItemServiceInterface;
 use App\Models\DonationItem;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -35,7 +35,7 @@ class DonationItemService implements DonationItemServiceInterface
 
     public function update(DonationItem $item, User $user, array $data): DonationItem
     {
-        if (!$this->canUserModify($item, $user)) {
+        if (! $this->canUserModify($item, $user)) {
             throw new \Exception('Você não tem permissão para modificar este item.');
         }
 
@@ -47,12 +47,18 @@ class DonationItemService implements DonationItemServiceInterface
 
     public function delete(DonationItem $item, User $user): bool
     {
-        if (!$this->canUserModify($item, $user)) {
+        if (! $this->canUserModify($item, $user)) {
             throw new \Exception('Você não tem permissão para excluir este item.');
         }
 
         if ($item->status === 'donated') {
             throw new \Exception('Não é possível excluir um item que já foi doado.');
+        }
+
+        // Delete physical image files before removing the item (FK cascade handles DB records)
+        $images = \App\Models\DonationImages::where('donation_item_id', $item->id)->get();
+        foreach ($images as $img) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($img->path);
         }
 
         return $this->donationItemRepository->delete($item);
@@ -63,14 +69,14 @@ class DonationItemService implements DonationItemServiceInterface
         return $this->donationItemRepository->getUserItems($user, $perPage);
     }
 
-    public function findByLocation(float $latitude, float $longitude, int $radius = 10, int $perPage = 15): LengthAwarePaginator
+    public function findByLocation(float $latitude, float $longitude, float $radius = 10, int $perPage = 15): LengthAwarePaginator
     {
         return $this->donationItemRepository->findByLocation($latitude, $longitude, $radius, $perPage);
     }
 
     public function markAsDonated(DonationItem $item, User $donor, User $recipient): DonationItem
     {
-        if (!$this->canUserModify($item, $donor)) {
+        if (! $this->canUserModify($item, $donor)) {
             throw new \Exception('Você não tem permissão para marcar este item como doado.');
         }
 
@@ -91,4 +97,3 @@ class DonationItemService implements DonationItemServiceInterface
         return $item->user_id === $user->id;
     }
 }
-

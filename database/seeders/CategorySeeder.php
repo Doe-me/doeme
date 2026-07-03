@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Category;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
@@ -18,53 +17,53 @@ class CategorySeeder extends Seeder
             [
                 'name' => 'Móveis',
                 'description' => 'Móveis para casa, escritório e decoração',
-                'icon' => 'furniture'
+                'icon' => 'furniture',
             ],
             [
                 'name' => 'Roupas',
                 'description' => 'Roupas, calçados e acessórios',
-                'icon' => 'clothing'
+                'icon' => 'clothing',
             ],
             [
                 'name' => 'Eletrônicos',
                 'description' => 'Aparelhos eletrônicos, celulares e computadores',
-                'icon' => 'electronics'
+                'icon' => 'electronics',
             ],
             [
                 'name' => 'Livros',
                 'description' => 'Livros, revistas e materiais de estudo',
-                'icon' => 'books'
+                'icon' => 'books',
             ],
             [
                 'name' => 'Brinquedos',
                 'description' => 'Brinquedos e jogos infantis',
-                'icon' => 'toys'
+                'icon' => 'toys',
             ],
             [
                 'name' => 'Utensílios Domésticos',
                 'description' => 'Utensílios de cozinha e casa',
-                'icon' => 'kitchen'
+                'icon' => 'kitchen',
             ],
             [
                 'name' => 'Esportes',
                 'description' => 'Equipamentos esportivos e de exercício',
-                'icon' => 'sports'
+                'icon' => 'sports',
             ],
             [
                 'name' => 'Decoração',
                 'description' => 'Itens de decoração e arte',
-                'icon' => 'decoration'
+                'icon' => 'decoration',
             ],
             [
                 'name' => 'Instrumentos Musicais',
                 'description' => 'Instrumentos musicais e equipamentos de som',
-                'icon' => 'music'
+                'icon' => 'music',
             ],
             [
                 'name' => 'Outros',
                 'description' => 'Outros itens diversos',
-                'icon' => 'other'
-            ]
+                'icon' => 'other',
+            ],
         ];
 
         foreach ($categories as $category) {
@@ -78,4 +77,3 @@ class CategorySeeder extends Seeder
         }
     }
 }
-

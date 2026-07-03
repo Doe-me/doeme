@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use App\Contracts\Services\AuthServiceInterface;
-use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ChangePasswordRequest;
+use App\Http\Requests\Auth\DeleteAccountRequest;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\UpdateAddressRequest;
+use App\Http\Requests\Auth\UpdateNotificationPreferencesRequest;
+use App\Http\Requests\Auth\UpdatePrivacySettingsRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,10 +32,13 @@ class AuthController extends Controller
      *     path="/api/auth/register",
      *     summary="Registrar novo usuário",
      *     tags={"Authentication"},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"name","email","password","password_confirmation"},
+     *
      *             @OA\Property(property="name", type="string", example="João Silva"),
      *             @OA\Property(property="email", type="string", format="email", example="joao@example.com"),
      *             @OA\Property(property="password", type="string", format="password", example="password123"),
@@ -39,19 +47,24 @@ class AuthController extends Controller
      *             @OA\Property(property="location", type="string", example="São Paulo, SP")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=201,
      *         description="Usuário registrado com sucesso",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Usuário registrado com sucesso"),
      *             @OA\Property(property="user", ref="#/components/schemas/User"),
      *             @OA\Property(property="token", type="string", example="1|abc123..."),
      *             @OA\Property(property="token_type", type="string", example="Bearer")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Erro de validação",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/Error")
      *     )
      * )
@@ -70,7 +83,7 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -80,27 +93,35 @@ class AuthController extends Controller
      *     path="/api/auth/login",
      *     summary="Fazer login",
      *     tags={"Authentication"},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
      *             required={"email","password"},
+     *
      *             @OA\Property(property="email", type="string", format="email", example="joao@example.com"),
      *             @OA\Property(property="password", type="string", format="password", example="password123")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Login realizado com sucesso",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Login realizado com sucesso"),
      *             @OA\Property(property="user", ref="#/components/schemas/User"),
      *             @OA\Property(property="token", type="string", example="1|abc123..."),
      *             @OA\Property(property="token_type", type="string", example="Bearer")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Credenciais inválidas",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/Error")
      *     )
      * )
@@ -119,7 +140,7 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Credenciais inválidas',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 422);
         }
     }
@@ -130,10 +151,13 @@ class AuthController extends Controller
      *     summary="Fazer logout",
      *     tags={"Authentication"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Logout realizado com sucesso",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Logout realizado com sucesso")
      *         )
      *     )
@@ -145,12 +169,12 @@ class AuthController extends Controller
             $this->authService->logout($request->user());
 
             return response()->json([
-                'message' => 'Logout realizado com sucesso'
+                'message' => 'Logout realizado com sucesso',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -161,10 +185,13 @@ class AuthController extends Controller
      *     summary="Obter dados do usuário autenticado",
      *     tags={"Authentication"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Dados do usuário",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="user", ref="#/components/schemas/User")
      *         )
      *     )
@@ -173,7 +200,7 @@ class AuthController extends Controller
     public function user(Request $request): JsonResponse
     {
         return response()->json([
-            'user' => $request->user()
+            'user' => $request->user(),
         ]);
     }
 
@@ -183,9 +210,12 @@ class AuthController extends Controller
      *     summary="Atualizar perfil do usuário",
      *     tags={"Authentication"},
      *     security={{"bearerAuth":{}}},
+     *
      *     @OA\RequestBody(
      *         required=true,
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="name", type="string", example="João Silva"),
      *             @OA\Property(property="email", type="string", format="email", example="joao@example.com"),
      *             @OA\Property(property="password", type="string", format="password", example="newpassword123"),
@@ -195,17 +225,22 @@ class AuthController extends Controller
      *             @OA\Property(property="avatar", type="string", example="https://example.com/avatar.jpg")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=200,
      *         description="Perfil atualizado com sucesso",
+     *
      *         @OA\JsonContent(
+     *
      *             @OA\Property(property="message", type="string", example="Perfil atualizado com sucesso"),
      *             @OA\Property(property="user", ref="#/components/schemas/User")
      *         )
      *     ),
+     *
      *     @OA\Response(
      *         response=422,
      *         description="Erro de validação",
+     *
      *         @OA\JsonContent(ref="#/components/schemas/Error")
      *     )
      * )
@@ -217,14 +252,138 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Perfil atualizado com sucesso',
-                'user' => $user
+                'user' => $user,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
-}
 
+    public function updateAddress(UpdateAddressRequest $request): JsonResponse
+    {
+        try {
+            $user = $this->authService->updateAddress($request->user(), $request->validated());
+
+            return response()->json([
+                'message' => 'Endereço atualizado com sucesso',
+                'user' => $user,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erro interno do servidor',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updateAvatar(Request $request): JsonResponse
+    {
+        $request->validate(['avatar' => ['required', 'image', 'max:2048']]);
+
+        try {
+            $user = $this->authService->updateAvatar($request->user(), $request->file('avatar'));
+
+            return response()->json(['message' => 'Avatar atualizado com sucesso', 'user' => $user]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro ao atualizar avatar', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
+    {
+        try {
+            $this->authService->changePassword(
+                $request->user(),
+                $request->input('current_password'),
+                $request->input('password')
+            );
+
+            return response()->json(['message' => 'Senha alterada com sucesso']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getNotificationPreferences(Request $request): JsonResponse
+    {
+        $defaults = [
+            'email_new_message' => true,
+            'email_donation_interest' => true,
+            'email_newsletter' => false,
+            'push_new_message' => true,
+            'push_donation_interest' => true,
+            'push_new_reviews' => false,
+        ];
+
+        $prefs = array_merge($defaults, $request->user()->notification_preferences ?? []);
+
+        return response()->json(['notification_preferences' => $prefs]);
+    }
+
+    public function updateNotificationPreferences(UpdateNotificationPreferencesRequest $request): JsonResponse
+    {
+        try {
+            $user = $this->authService->updateNotificationPreferences($request->user(), $request->validated());
+
+            return response()->json(['message' => 'Preferências atualizadas', 'notification_preferences' => $user->notification_preferences]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getPrivacySettings(Request $request): JsonResponse
+    {
+        $defaults = [
+            'show_email' => false,
+            'show_phone' => false,
+            'show_location' => true,
+            'allow_messages' => true,
+            'online_status' => true,
+        ];
+
+        $settings = array_merge($defaults, $request->user()->privacy_settings ?? []);
+
+        return response()->json(['privacy_settings' => $settings]);
+    }
+
+    public function updatePrivacySettings(UpdatePrivacySettingsRequest $request): JsonResponse
+    {
+        try {
+            $user = $this->authService->updatePrivacySettings($request->user(), $request->validated());
+
+            return response()->json(['message' => 'Configurações atualizadas', 'privacy_settings' => $user->privacy_settings]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getConnectedAccounts(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'connected_accounts' => [
+                'google' => ! empty($user->google_id),
+                'facebook' => ! empty($user->facebook_id),
+            ],
+        ]);
+    }
+
+    public function deleteAccount(DeleteAccountRequest $request): JsonResponse
+    {
+        try {
+            $this->authService->deleteAccount($request->user(), $request->input('password'));
+
+            return response()->json(['message' => 'Conta excluída com sucesso']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
+        }
+    }
+}

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -74,23 +75,29 @@ class DonationItem extends Model
     /**
      * Scope para itens disponíveis
      */
-    public function scopeAvailable($query)
+    public function scopeAvailable(Builder $query): Builder
     {
         return $query->where('status', 'available');
     }
 
     /**
-     * Scope para busca por localização
+     * Scope para busca por localização (bounding box SQL + Haversine em PHP).
+     *
+     * Não usa funções matemáticas do BD (ST_Distance_Sphere, acos, etc.) para
+     * ser compatível com SQLite em dev e PostgreSQL em produção. O filtro de
+     * raio exato e a ordenação por distância são feitos pela camada PHP após
+     * buscar os candidatos da bounding box.
      */
-    public function scopeNearLocation($query, $latitude, $longitude, $radius = 10)
+    public function scopeNearLocation(Builder $query, float $latitude, float $longitude, float $radius = 10): Builder
     {
-        return $query->whereRaw(
-            "ST_Distance_Sphere(
-                POINT(longitude, latitude),
-                POINT(?, ?)
-            ) <= ?",
-            [$longitude, $latitude, $radius * 1000]
-        );
+        // 1° de latitude ≈ 111 km; 1° de longitude varia com o cosseno da latitude
+        $latDelta = $radius / 111.0;
+        $lonDelta = $radius / (111.0 * cos(deg2rad($latitude)));
+
+        return $query
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->whereBetween('latitude', [$latitude - $latDelta, $latitude + $latDelta])
+            ->whereBetween('longitude', [$longitude - $lonDelta, $longitude + $lonDelta]);
     }
 }
-

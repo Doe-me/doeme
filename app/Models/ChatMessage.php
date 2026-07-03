@@ -52,4 +52,3 @@ class ChatMessage extends Model
         $this->update(['read_at' => now()]);
     }
 }
-

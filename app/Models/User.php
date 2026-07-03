@@ -26,6 +26,18 @@ class User extends Authenticatable
         'avatar',
         'phone',
         'location',
+        'is_admin',
+        'bio',
+        'birth_date',
+        'zip_code',
+        'street',
+        'number',
+        'complement',
+        'neighborhood',
+        'city',
+        'state',
+        'notification_preferences',
+        'privacy_settings',
     ];
 
     /**
@@ -46,6 +58,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_admin' => 'boolean',
+        'notification_preferences' => 'array',
+        'privacy_settings' => 'array',
     ];
 
     /**
@@ -107,16 +122,36 @@ class User extends Authenticatable
     /**
      * Calcula a média de avaliações do usuário
      */
-    public function getAverageRatingAttribute()
+    public function getAverageRatingAttribute(): float
     {
-        return $this->reviewsReceived()->avg('rating') ?? 0;
+        return round((float) ($this->reviewsReceived()->avg('rating') ?? 0), 1);
     }
 
-    /**
-     * Conta o total de avaliações recebidas
-     */
-    public function getTotalReviewsAttribute()
+    public function getTotalReviewsAttribute(): int
     {
         return $this->reviewsReceived()->count();
+    }
+
+    public function getDonationsCountAttribute(): int
+    {
+        return $this->donationItems()->count();
+    }
+
+    public function getReceivedCountAttribute(): int
+    {
+        return $this->receivedItems()->count();
+    }
+
+    public function getAddressAttribute(): array
+    {
+        return [
+            'zip_code' => $this->zip_code,
+            'street' => $this->street,
+            'number' => $this->number,
+            'complement' => $this->complement,
+            'neighborhood' => $this->neighborhood,
+            'city' => $this->city,
+            'state' => $this->state,
+        ];
     }
 }

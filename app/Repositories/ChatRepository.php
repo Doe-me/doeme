@@ -5,8 +5,8 @@ namespace App\Repositories;
 use App\Contracts\Repositories\ChatRepositoryInterface;
 use App\Models\Chat;
 use App\Models\ChatMessage;
-use App\Models\User;
 use App\Models\DonationItem;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ChatRepository implements ChatRepositoryInterface
@@ -28,7 +28,7 @@ class ChatRepository implements ChatRepositoryInterface
             ->where('interested_user_id', $interestedUser->id)
             ->first();
 
-        if (!$chat) {
+        if (! $chat) {
             $chat = $this->create([
                 'donation_item_id' => $item->id,
                 'donor_id' => $donor->id,
@@ -43,9 +43,9 @@ class ChatRepository implements ChatRepositoryInterface
     public function getUserChats(User $user, int $perPage = 20): LengthAwarePaginator
     {
         return Chat::with(['donationItem', 'donor', 'interestedUser', 'lastMessage'])
-            ->where(function($query) use ($user) {
+            ->where(function ($query) use ($user) {
                 $query->where('donor_id', $user->id)
-                      ->orWhere('interested_user_id', $user->id);
+                    ->orWhere('interested_user_id', $user->id);
             })
             ->orderBy('last_message_at', 'desc')
             ->paginate($perPage);
@@ -88,7 +88,7 @@ class ChatRepository implements ChatRepositoryInterface
     public function updateLastMessageAt(Chat $chat): Chat
     {
         $chat->update(['last_message_at' => now()]);
+
         return $chat;
     }
 }
-
