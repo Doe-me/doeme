@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
         Route::put('/profile', [AuthController::class, 'updateProfile']);
+        Route::put('/address', [AuthController::class, 'updateAddress']);
         Route::post('/avatar', [AuthController::class, 'updateAvatar']);
         Route::post('/change-password', [AuthController::class, 'changePassword']);
         Route::get('/notification-preferences', [AuthController::class, 'getNotificationPreferences']);

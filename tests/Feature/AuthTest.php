@@ -94,6 +94,31 @@ class AuthTest extends TestCase
         $this->assertNotNull($response->json('user.avatar'));
     }
 
+    public function test_user_can_update_address(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('test')->plainTextToken;
+
+        $response = $this->withToken($token)->putJson('/api/auth/address', [
+            'street' => 'Rua das Flores',
+            'number' => '123',
+            'neighborhood' => 'Centro',
+            'city' => 'São Paulo',
+            'state' => 'SP',
+            'zip_code' => '01310-100',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('user.city', 'São Paulo')
+            ->assertJsonPath('user.state', 'SP');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'street' => 'Rua das Flores',
+            'city' => 'São Paulo',
+        ]);
+    }
+
     public function test_user_can_change_password(): void
     {
         $user = User::factory()->create(['password' => bcrypt('OldPassword123!')]);
@@ -105,7 +130,8 @@ class AuthTest extends TestCase
             'password_confirmation' => 'NewPassword123!',
         ]);
 
-        $response->assertStatus(200)->assertJsonPath('message', 'Senha alterada com sucesso');
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'Senha alterada com sucesso');
     }
 
     public function test_change_password_rejects_wrong_current_password(): void
@@ -119,7 +145,8 @@ class AuthTest extends TestCase
             'password_confirmation' => 'NewPassword123!',
         ]);
 
-        $response->assertStatus(422)->assertJsonPath('errors.current_password.0', 'A senha atual está incorreta.');
+        $response->assertStatus(422)
+            ->assertJsonPath('errors.current_password.0', 'A senha atual está incorreta.');
     }
 
     public function test_user_can_get_notification_preferences(): void
@@ -179,6 +206,20 @@ class AuthTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('connected_accounts.google', true)
             ->assertJsonPath('connected_accounts.facebook', false);
+    }
+
+    public function test_change_password_requires_confirmation_match(): void
+    {
+        $user = User::factory()->create(['password' => bcrypt('Password123!')]);
+        $token = $user->createToken('test')->plainTextToken;
+
+        $response = $this->withToken($token)->postJson('/api/auth/change-password', [
+            'current_password' => 'Password123!',
+            'password' => 'NewPassword123!',
+            'password_confirmation' => 'DifferentPassword!',
+        ]);
+
+        $response->assertStatus(422);
     }
 
     public function test_user_can_delete_account(): void

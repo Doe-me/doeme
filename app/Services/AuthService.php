@@ -64,6 +64,24 @@ class AuthService implements AuthServiceInterface
         return $this->userRepository->update($user, $data);
     }
 
+    public function updateAddress(User $user, array $data): User
+    {
+        return $this->userRepository->update($user, $data);
+    }
+
+    public function changePassword(User $user, string $currentPassword, string $newPassword): void
+    {
+        if (! Hash::check($currentPassword, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['A senha atual está incorreta.'],
+            ]);
+        }
+
+        $this->userRepository->update($user, [
+            'password' => Hash::make($newPassword),
+        ]);
+    }
+
     public function handleSocialLogin(string $provider, SocialiteUser $socialUser): array
     {
         // Tentar encontrar usuário por ID social
@@ -112,16 +130,6 @@ class AuthService implements AuthServiceInterface
         $user->tokens()->delete();
 
         return true;
-    }
-
-    public function changePassword(User $user, string $currentPassword, string $newPassword): void
-    {
-        if (! Hash::check($currentPassword, $user->password)) {
-            throw ValidationException::withMessages([
-                'current_password' => ['A senha atual está incorreta.'],
-            ]);
-        }
-        $this->userRepository->update($user, ['password' => Hash::make($newPassword)]);
     }
 
     public function updateAvatar(User $user, UploadedFile $file): User

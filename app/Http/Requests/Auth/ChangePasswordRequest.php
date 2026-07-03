@@ -19,4 +19,14 @@ class ChangePasswordRequest extends FormRequest
             'password_confirmation' => ['required', 'string'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'current_password.required' => 'A senha atual é obrigatória.',
+            'password.required' => 'A nova senha é obrigatória.',
+            'password.min' => 'A nova senha deve ter pelo menos 8 caracteres.',
+            'password.confirmed' => 'A confirmação de senha não coincide.',
+        ];
+    }
 }

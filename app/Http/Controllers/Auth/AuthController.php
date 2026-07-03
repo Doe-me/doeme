@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\DeleteAccountRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\UpdateAddressRequest;
 use App\Http\Requests\Auth\UpdateNotificationPreferencesRequest;
 use App\Http\Requests\Auth\UpdatePrivacySettingsRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
@@ -251,6 +252,23 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Perfil atualizado com sucesso',
+                'user' => $user,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erro interno do servidor',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function updateAddress(UpdateAddressRequest $request): JsonResponse
+    {
+        try {
+            $user = $this->authService->updateAddress($request->user(), $request->validated());
+
+            return response()->json([
+                'message' => 'Endereço atualizado com sucesso',
                 'user' => $user,
             ]);
         } catch (\Exception $e) {
