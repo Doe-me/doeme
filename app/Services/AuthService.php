@@ -9,6 +9,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
@@ -98,10 +99,13 @@ class AuthService implements AuthServiceInterface
                 ];
                 $user = $this->userRepository->update($user, $socialData);
             } else {
-                // Criar novo usuário
+                // Criar novo usuário. A coluna "password" é NOT NULL mesmo para
+                // contas só-social, então geramos uma senha aleatória que o
+                // usuário nunca vai precisar usar (login é sempre via provider).
                 $userData = [
                     'name' => $socialUser->getName(),
                     'email' => $socialUser->getEmail(),
+                    'password' => Hash::make(Str::random(32)),
                     'avatar' => $socialUser->getAvatar(),
                     $provider.'_id' => $socialUser->getId(),
                     'email_verified_at' => now(),

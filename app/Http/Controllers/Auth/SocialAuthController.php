@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Contracts\Services\AuthServiceInterface;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -42,7 +41,9 @@ class SocialAuthController extends Controller
      */
     public function redirectToProvider(string $provider): RedirectResponse
     {
-        return Socialite::driver($provider)->redirect();
+        // stateless(): rotas de API não têm sessão (middleware "web"), e o
+        // Socialite usa a sessão por padrão para guardar o "state" do OAuth.
+        return Socialite::driver($provider)->stateless()->redirect();
     }
 
     /**
@@ -73,30 +74,46 @@ class SocialAuthController extends Controller
      *     ),
      *
      *     @OA\Response(
-     *         response=400,
-     *         description="Erro na autenticação social",
-     *
-     *         @OA\JsonContent(ref="#/components/schemas/Error")
+     *         response=302,
+     *         description="Redireciona para o frontend com o token (sucesso) ou com a mensagem de erro"
      *     )
      * )
      */
-    public function handleProviderCallback(string $provider): JsonResponse
+    public function handleProviderCallback(string $provider, \Illuminate\Http\Request $request): RedirectResponse
     {
+        // Usuário negou permissão ou o provider retornou erro antes de gerar o "code".
+        if ($request->has('error')) {
+            return $this->redirectToFrontendWithError(
+                $provider,
+                $request->string('error_description', $request->string('error'))->toString()
+            );
+        }
+
         try {
-            $socialUser = Socialite::driver($provider)->user();
+            $socialUser = Socialite::driver($provider)->stateless()->user();
             $result = $this->authService->handleSocialLogin($provider, $socialUser);
 
-            return response()->json([
-                'message' => 'Login realizado com sucesso',
-                'user' => $result['user'],
-                'token' => $result['token'],
-                'token_type' => $result['token_type'],
-            ]);
+            return redirect()->away(
+                $this->frontendCallbackUrl($provider).'?'.http_build_query([
+                    'token' => $result['token'],
+                ])
+            );
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro na autenticação social',
-                'message' => $e->getMessage(),
-            ], 400);
+            return $this->redirectToFrontendWithError($provider, $e->getMessage());
         }
+    }
+
+    private function redirectToFrontendWithError(string $provider, string $message): RedirectResponse
+    {
+        return redirect()->away(
+            $this->frontendCallbackUrl($provider).'?'.http_build_query([
+                'error' => $message ?: 'Erro na autenticação social',
+            ])
+        );
+    }
+
+    private function frontendCallbackUrl(string $provider): string
+    {
+        return rtrim(config('app.frontend_url'), '/')."/auth/{$provider}/callback";
     }
 }
