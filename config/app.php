@@ -180,6 +180,7 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        // TelescopeServiceProvider is registered conditionally in AppServiceProvider (local only)
         App\Providers\RepositoryServiceProvider::class,
     ])->toArray(),
 
