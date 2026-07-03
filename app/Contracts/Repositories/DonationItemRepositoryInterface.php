@@ -5,6 +5,7 @@ namespace App\Contracts\Repositories;
 use App\Models\DonationItem;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 
 interface DonationItemRepositoryInterface
 {
@@ -56,5 +57,5 @@ interface DonationItemRepositoryInterface
     /**
      * Obter itens relacionados
      */
-    public function getRelatedItems(DonationItem $item, int $limit = 5): \Illuminate\Database\Eloquent\Collection;
+    public function getRelatedItems(DonationItem $item, int $limit = 5): Collection;
 }

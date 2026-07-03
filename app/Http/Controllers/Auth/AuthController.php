@@ -14,6 +14,7 @@ use App\Http\Requests\Auth\UpdatePrivacySettingsRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @OA\Tag(
@@ -302,7 +303,7 @@ class AuthController extends Controller
             );
 
             return response()->json(['message' => 'Senha alterada com sucesso']);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
@@ -380,7 +381,7 @@ class AuthController extends Controller
             $this->authService->deleteAccount($request->user(), $request->input('password'));
 
             return response()->json(['message' => 'Conta excluída com sucesso']);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Contracts\Services\AuthServiceInterface;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 
 /**
@@ -79,7 +80,7 @@ class SocialAuthController extends Controller
      *     )
      * )
      */
-    public function handleProviderCallback(string $provider, \Illuminate\Http\Request $request): RedirectResponse
+    public function handleProviderCallback(string $provider, Request $request): RedirectResponse
     {
         // Usuário negou permissão ou o provider retornou erro antes de gerar o "code".
         if ($request->has('error')) {

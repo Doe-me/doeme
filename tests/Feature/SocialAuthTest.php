@@ -81,7 +81,7 @@ class SocialAuthTest extends TestCase
             'email' => 'ja.cadastrado@example.com',
             'google_id' => '123456789',
         ]);
-        $this->assertEquals(1, \App\Models\User::where('email', 'ja.cadastrado@example.com')->count());
+        $this->assertEquals(1, User::where('email', 'ja.cadastrado@example.com')->count());
     }
 
     public function test_callback_redirects_to_frontend_with_error_when_user_denies_permission(): void
