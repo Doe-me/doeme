@@ -40,6 +40,11 @@ interface ReviewServiceInterface
     public function getUserReviews(User $user, int $perPage = 15): array;
 
     /**
+     * Obter estatísticas de avaliações de um usuário
+     */
+    public function getUserStats(User $user): array;
+
+    /**
      * Verificar se usuário pode avaliar
      */
     public function canUserReview(DonationItem $item, User $reviewer, User $reviewedUser): bool;

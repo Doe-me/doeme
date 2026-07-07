@@ -57,6 +57,12 @@ Route::prefix('auth')->group(function () {
         ->where('provider', 'google|facebook');
 });
 
+// Health check (monitoramento)
+Route::get('/health', fn () => response()->json([
+    'status' => 'ok',
+    'timestamp' => now()->toIso8601String(),
+]));
+
 // Rotas públicas para categorias e itens (visualização)
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}', [CategoryController::class, 'show']);
@@ -64,6 +70,7 @@ Route::get('/donation-items', [DonationItemController::class, 'index']);
 Route::get('/donation-items/{donationItem}', [DonationItemController::class, 'show']);
 Route::get('/reviews', [ReviewController::class, 'index']);
 Route::get('/users/{user}/reviews', [ReviewController::class, 'userReviews']);
+Route::get('/users/{user}/review-stats', [ReviewController::class, 'userReviewStats']);
 
 // Rotas protegidas por autenticação
 Route::middleware('auth:sanctum')->group(function () {
@@ -96,6 +103,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/chats/{chat}/messages', [ChatController::class, 'sendMessage']);
 
     // Avaliações
+    // "can-review" antes do apiResource para não colidir com reviews/{review}
+    Route::get('/reviews/can-review', [ReviewController::class, 'canReview']);
     Route::apiResource('reviews', ReviewController::class)->except(['index']);
 });
 
