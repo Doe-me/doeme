@@ -86,10 +86,7 @@ class ReviewController extends Controller
 
             return response()->json($reviews);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'review');
         }
     }
 
@@ -262,10 +259,8 @@ class ReviewController extends Controller
                 'data' => $review,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao atualizar avaliação',
-                'message' => $e->getMessage(),
-            ], 403);
+            // Autorização real já tratada por authorize('update') antes do try.
+            return $this->serverError($e, 'review.update');
         }
     }
 
@@ -313,10 +308,8 @@ class ReviewController extends Controller
                 'message' => 'Avaliação excluída com sucesso',
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao excluir avaliação',
-                'message' => $e->getMessage(),
-            ], 403);
+            // Autorização real já tratada por authorize('delete') antes do try.
+            return $this->serverError($e, 'review.destroy');
         }
     }
 
@@ -381,10 +374,7 @@ class ReviewController extends Controller
 
             return response()->json($result);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'review');
         }
     }
 }

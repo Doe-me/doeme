@@ -67,10 +67,7 @@ class CategoryController extends Controller
 
             return response()->json($categories);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'category');
         }
     }
 
@@ -125,10 +122,7 @@ class CategoryController extends Controller
                 'data' => $category,
             ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'category');
         }
     }
 
@@ -225,10 +219,7 @@ class CategoryController extends Controller
                 'data' => $category,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'category');
         }
     }
 

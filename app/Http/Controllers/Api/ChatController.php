@@ -69,10 +69,7 @@ class ChatController extends Controller
 
             return response()->json($chats);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'chat.index');
         }
     }
 
@@ -214,10 +211,8 @@ class ChatController extends Controller
                 'messages' => $messages,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao acessar chat',
-                'message' => $e->getMessage(),
-            ], 403);
+            // Autorização real já tratada por authorize('view') antes do try.
+            return $this->serverError($e, 'chat.show');
         }
     }
 
@@ -282,10 +277,8 @@ class ChatController extends Controller
                 'data' => $message,
             ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao enviar mensagem',
-                'message' => $e->getMessage(),
-            ], 403);
+            // Autorização real já tratada por authorize('sendMessage') antes do try.
+            return $this->serverError($e, 'chat.send_message');
         }
     }
 }
