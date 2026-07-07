@@ -50,6 +50,10 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth');
 
+    // Recuperação de senha
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:auth');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:auth');
+
     // Autenticação social
     Route::get('/{provider}/redirect', [SocialAuthController::class, 'redirectToProvider'])
         ->where('provider', 'google|facebook');

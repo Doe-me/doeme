@@ -5,9 +5,11 @@ namespace App\Services;
 use App\Contracts\Repositories\UserRepositoryInterface;
 use App\Contracts\Services\AuthServiceInterface;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -81,6 +83,33 @@ class AuthService implements AuthServiceInterface
         $this->userRepository->update($user, [
             'password' => Hash::make($newPassword),
         ]);
+    }
+
+    /**
+     * Dispara o e-mail de recuperação de senha via broker do Laravel.
+     * Retorna o status (Password::RESET_LINK_SENT, INVALID_USER, etc.).
+     */
+    public function sendPasswordResetLink(string $email): string
+    {
+        return Password::sendResetLink(['email' => $email]);
+    }
+
+    /**
+     * Redefine a senha a partir do token do broker. Ao concluir, revoga os
+     * tokens Sanctum existentes (sessões antigas) e dispara o evento PasswordReset.
+     * Retorna o status (Password::PASSWORD_RESET, INVALID_TOKEN, etc.).
+     */
+    public function resetPassword(array $data): string
+    {
+        return Password::reset($data, function (User $user, string $password) {
+            $user->forceFill([
+                'password' => Hash::make($password),
+            ])->save();
+
+            $this->revokeAllTokens($user);
+
+            event(new PasswordReset($user));
+        });
     }
 
     public function handleSocialLogin(string $provider, SocialiteUser $socialUser): array

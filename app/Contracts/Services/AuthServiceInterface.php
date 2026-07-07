@@ -44,6 +44,16 @@ interface AuthServiceInterface
     public function changePassword(User $user, string $currentPassword, string $newPassword): void;
 
     /**
+     * Enviar link de recuperação de senha por e-mail
+     */
+    public function sendPasswordResetLink(string $email): string;
+
+    /**
+     * Redefinir a senha a partir do token de recuperação
+     */
+    public function resetPassword(array $data): string;
+
+    /**
      * Gerar token de acesso
      */
     public function generateAccessToken(User $user, string $tokenName = 'auth_token'): string;

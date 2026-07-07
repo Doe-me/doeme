@@ -6,14 +6,18 @@ use App\Contracts\Services\AuthServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\DeleteAccountRequest;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\UpdateAddressRequest;
 use App\Http\Requests\Auth\UpdateNotificationPreferencesRequest;
 use App\Http\Requests\Auth\UpdatePrivacySettingsRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @OA\Tag(
@@ -143,6 +147,71 @@ class AuthController extends Controller
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/auth/forgot-password",
+     *     summary="Solicitar recuperação de senha",
+     *     tags={"Authentication"},
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\JsonContent(
+     *             required={"email"},
+     *
+     *             @OA\Property(property="email", type="string", format="email", example="joao@example.com")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(response=200, description="Instruções enviadas (resposta genérica)")
+     * )
+     */
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+    {
+        $this->authService->sendPasswordResetLink($request->validated()['email']);
+
+        // Resposta sempre genérica, para não revelar se o e-mail existe (evita enumeração).
+        return response()->json([
+            'message' => 'Se houver uma conta com esse e-mail, enviaremos as instruções de recuperação.',
+        ]);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/auth/reset-password",
+     *     summary="Redefinir senha com token de recuperação",
+     *     tags={"Authentication"},
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\JsonContent(
+     *             required={"token","email","password","password_confirmation"},
+     *
+     *             @OA\Property(property="token", type="string"),
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="password", type="string", format="password"),
+     *             @OA\Property(property="password_confirmation", type="string", format="password")
+     *         )
+     *     ),
+     *
+     *     @OA\Response(response=200, description="Senha redefinida"),
+     *     @OA\Response(response=422, description="Token inválido ou expirado")
+     * )
+     */
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    {
+        $status = $this->authService->resetPassword($request->validated());
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json(['message' => 'Senha redefinida com sucesso.']);
+        }
+
+        return response()->json([
+            'message' => 'Não foi possível redefinir a senha. O link pode ser inválido ou ter expirado.',
+        ], 422);
     }
 
     /**
@@ -302,7 +371,7 @@ class AuthController extends Controller
             );
 
             return response()->json(['message' => 'Senha alterada com sucesso']);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
@@ -380,7 +449,7 @@ class AuthController extends Controller
             $this->authService->deleteAccount($request->user(), $request->input('password'));
 
             return response()->json(['message' => 'Conta excluída com sucesso']);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
