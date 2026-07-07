@@ -10,6 +10,8 @@ interface DonationImagesRepositoryInterface
 
     public function findById(int $id): ?DonationImages;
 
+    public function delete(DonationImages $image): bool;
+
     public function deleteByItemId(int $donationItemId): bool;
 
     public function countByItemId(int $donationItemId): int;

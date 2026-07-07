@@ -15,6 +15,10 @@ class DonationItem extends Model
         'category_id',
         'title',
         'description',
+        // Coluna JSON legada: aceita URLs externas de imagem enviadas no
+        // create/update. A fonte da verdade das fotos enviadas por upload é a
+        // tabela donation_images (relacionamento donationImages). O frontend
+        // prioriza donation_images e só usa "images" como fallback.
         'images',
         'condition',
         'location',
@@ -70,6 +74,14 @@ class DonationItem extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    /**
+     * Imagens enviadas por upload (fonte da verdade das fotos do item).
+     */
+    public function donationImages()
+    {
+        return $this->hasMany(DonationImages::class);
     }
 
     /**
