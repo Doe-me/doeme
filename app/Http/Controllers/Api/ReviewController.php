@@ -6,6 +6,7 @@ use App\Contracts\Services\ReviewServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreReviewRequest;
 use App\Http\Requests\Api\UpdateReviewRequest;
+use App\Models\DonationItem;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -386,5 +387,49 @@ class ReviewController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/users/{user}/review-stats",
+     *     summary="Estatísticas de avaliações de um usuário",
+     *     tags={"Reviews"},
+     *
+     *     @OA\Parameter(name="user", in="path", required=true, @OA\Schema(type="integer")),
+     *
+     *     @OA\Response(response=200, description="Estatísticas do usuário")
+     * )
+     */
+    public function userReviewStats(User $user): JsonResponse
+    {
+        return response()->json($this->reviewService->getUserStats($user));
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/reviews/can-review",
+     *     summary="Verifica se o usuário autenticado pode avaliar outro usuário por um item",
+     *     tags={"Reviews"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(name="user_id", in="query", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="donation_item_id", in="query", required=true, @OA\Schema(type="integer")),
+     *
+     *     @OA\Response(response=200, description="{ can_review: bool }")
+     * )
+     */
+    public function canReview(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'donation_item_id' => ['required', 'integer', 'exists:donation_items,id'],
+        ]);
+
+        $item = DonationItem::findOrFail($data['donation_item_id']);
+        $reviewedUser = User::findOrFail($data['user_id']);
+
+        $canReview = $this->reviewService->canUserReview($item, $request->user(), $reviewedUser);
+
+        return response()->json(['can_review' => $canReview]);
     }
 }

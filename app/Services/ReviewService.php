@@ -89,6 +89,11 @@ class ReviewService implements ReviewServiceInterface
         ];
     }
 
+    public function getUserStats(User $user): array
+    {
+        return $this->reviewRepository->getUserReviewStats($user);
+    }
+
     public function canUserReview(DonationItem $item, User $reviewer, User $reviewedUser): bool
     {
         return $this->reviewRepository->canUserReview($item, $reviewer, $reviewedUser);
