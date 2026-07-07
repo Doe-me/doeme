@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Contracts\Repositories\DonationItemRepositoryInterface;
 use App\Contracts\Services\DonationItemServiceInterface;
+use App\Models\DonationImages;
 use App\Models\DonationItem;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class DonationItemService implements DonationItemServiceInterface
 {
@@ -56,9 +58,9 @@ class DonationItemService implements DonationItemServiceInterface
         }
 
         // Delete physical image files before removing the item (FK cascade handles DB records)
-        $images = \App\Models\DonationImages::where('donation_item_id', $item->id)->get();
+        $images = DonationImages::where('donation_item_id', $item->id)->get();
         foreach ($images as $img) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($img->path);
+            Storage::disk('public')->delete($img->path);
         }
 
         return $this->donationItemRepository->delete($item);
@@ -80,11 +82,42 @@ class DonationItemService implements DonationItemServiceInterface
             throw new \Exception('Você não tem permissão para marcar este item como doado.');
         }
 
-        if ($item->status !== 'available') {
-            throw new \Exception('Este item não está disponível para doação.');
+        // Pode doar um item disponível ou reservado; não um já doado.
+        if ($item->status === 'donated') {
+            throw new \Exception('Este item já foi doado.');
+        }
+
+        if ($recipient->id === $donor->id) {
+            throw new \Exception('Você não pode marcar o item como doado para você mesmo.');
         }
 
         return $this->donationItemRepository->markAsDonated($item, $recipient);
+    }
+
+    public function reserve(DonationItem $item, User $user): DonationItem
+    {
+        if (! $this->canUserModify($item, $user)) {
+            throw new \Exception('Você não tem permissão para reservar este item.');
+        }
+
+        if ($item->status !== 'available') {
+            throw new \Exception('Apenas itens disponíveis podem ser reservados.');
+        }
+
+        return $this->donationItemRepository->update($item, ['status' => 'reserved']);
+    }
+
+    public function cancelReservation(DonationItem $item, User $user): DonationItem
+    {
+        if (! $this->canUserModify($item, $user)) {
+            throw new \Exception('Você não tem permissão para alterar este item.');
+        }
+
+        if ($item->status !== 'reserved') {
+            throw new \Exception('Apenas itens reservados podem ter a reserva cancelada.');
+        }
+
+        return $this->donationItemRepository->update($item, ['status' => 'available']);
     }
 
     public function getRelatedItems(DonationItem $item, int $limit = 5): Collection

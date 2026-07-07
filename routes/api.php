@@ -91,6 +91,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-donations', [DonationItemController::class, 'myDonations']);
     Route::post('/donation-items/{donationItem}/images', [DonationItemController::class, 'uploadImages']);
 
+    // Conclusão/estado da doação (apenas o dono)
+    Route::post('/donation-items/{donationItem}/donate', [DonationItemController::class, 'donate']);
+    Route::post('/donation-items/{donationItem}/reserve', [DonationItemController::class, 'reserve']);
+    Route::post('/donation-items/{donationItem}/cancel-reservation', [DonationItemController::class, 'cancelReservation']);
+
     // Chat
     Route::apiResource('chats', ChatController::class)->only(['index', 'store', 'show']);
     Route::post('/chats/{chat}/messages', [ChatController::class, 'sendMessage']);

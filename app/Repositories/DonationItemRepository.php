@@ -74,7 +74,7 @@ class DonationItemRepository implements DonationItemRepositoryInterface
 
     public function getUserItems(User $user, int $perPage = 15): LengthAwarePaginator
     {
-        return DonationItem::with(['category'])
+        return DonationItem::with(['category', 'donatedToUser'])
             ->where('user_id', $user->id)
             ->latest()
             ->paginate($perPage);
