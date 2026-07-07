@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * @OA\Info(
@@ -100,4 +103,21 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
+
+    /**
+     * Resposta padrão para erros inesperados de servidor.
+     *
+     * Loga a exceção real (com contexto) para diagnóstico interno e devolve
+     * uma mensagem genérica ao cliente — nunca o $e->getMessage(), que pode
+     * conter detalhes internos (SQL, infra) e não deve vazar na API.
+     */
+    protected function serverError(Throwable $e, string $context): JsonResponse
+    {
+        Log::error("[{$context}] {$e->getMessage()}", ['exception' => $e]);
+
+        return response()->json([
+            'error' => 'Erro interno do servidor',
+            'message' => 'Ocorreu um erro inesperado. Tente novamente mais tarde.',
+        ], 500);
+    }
 }

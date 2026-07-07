@@ -14,6 +14,7 @@ use App\Http\Requests\Auth\UpdatePrivacySettingsRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @OA\Tag(
@@ -81,10 +82,7 @@ class AuthController extends Controller
                 'token_type' => $result['token_type'],
             ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'auth');
         }
     }
 
@@ -172,10 +170,7 @@ class AuthController extends Controller
                 'message' => 'Logout realizado com sucesso',
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'auth');
         }
     }
 
@@ -255,10 +250,7 @@ class AuthController extends Controller
                 'user' => $user,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'auth');
         }
     }
 
@@ -272,10 +264,7 @@ class AuthController extends Controller
                 'user' => $user,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'auth');
         }
     }
 
@@ -288,7 +277,7 @@ class AuthController extends Controller
 
             return response()->json(['message' => 'Avatar atualizado com sucesso', 'user' => $user]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro ao atualizar avatar', 'message' => $e->getMessage()], 500);
+            return $this->serverError($e, 'auth.update_avatar');
         }
     }
 
@@ -302,10 +291,10 @@ class AuthController extends Controller
             );
 
             return response()->json(['message' => 'Senha alterada com sucesso']);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
+            return $this->serverError($e, 'auth');
         }
     }
 
@@ -332,7 +321,7 @@ class AuthController extends Controller
 
             return response()->json(['message' => 'Preferências atualizadas', 'notification_preferences' => $user->notification_preferences]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
+            return $this->serverError($e, 'auth');
         }
     }
 
@@ -358,7 +347,7 @@ class AuthController extends Controller
 
             return response()->json(['message' => 'Configurações atualizadas', 'privacy_settings' => $user->privacy_settings]);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
+            return $this->serverError($e, 'auth');
         }
     }
 
@@ -380,10 +369,10 @@ class AuthController extends Controller
             $this->authService->deleteAccount($request->user(), $request->input('password'));
 
             return response()->json(['message' => 'Conta excluída com sucesso']);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json(['message' => 'Erro de validação', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro interno do servidor', 'message' => $e->getMessage()], 500);
+            return $this->serverError($e, 'auth');
         }
     }
 }

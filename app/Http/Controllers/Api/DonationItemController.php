@@ -94,10 +94,7 @@ class DonationItemController extends Controller
 
             return response()->json($items);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'donation_item');
         }
     }
 
@@ -154,10 +151,7 @@ class DonationItemController extends Controller
                 'data' => $item,
             ], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'donation_item');
         }
     }
 
@@ -202,10 +196,7 @@ class DonationItemController extends Controller
                 'related_items' => $relatedItems,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'donation_item');
         }
     }
 
@@ -271,10 +262,9 @@ class DonationItemController extends Controller
                 'data' => $item,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao atualizar item',
-                'message' => $e->getMessage(),
-            ], 403);
+            // Autorização real já foi tratada por authorize() (403) antes do try;
+            // qualquer exceção aqui é erro inesperado de servidor.
+            return $this->serverError($e, 'donation_item.update');
         }
     }
 
@@ -315,6 +305,14 @@ class DonationItemController extends Controller
     {
         $this->authorize('delete', $donationItem);
 
+        // Regra de negócio (não é autorização nem erro de servidor): item doado
+        // não pode ser excluído.
+        if ($donationItem->status === 'donated') {
+            return response()->json([
+                'error' => 'Não é possível excluir um item que já foi doado.',
+            ], 422);
+        }
+
         try {
             $this->donationItemService->delete($donationItem, $request->user());
 
@@ -322,10 +320,8 @@ class DonationItemController extends Controller
                 'message' => 'Item excluído com sucesso',
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro ao excluir item',
-                'message' => $e->getMessage(),
-            ], 403);
+            // Autorização real já foi tratada por authorize() (403) antes do try.
+            return $this->serverError($e, 'donation_item.destroy');
         }
     }
 
@@ -369,10 +365,7 @@ class DonationItemController extends Controller
 
             return response()->json($items);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erro interno do servidor',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->serverError($e, 'donation_item');
         }
     }
 
