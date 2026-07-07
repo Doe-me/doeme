@@ -9,6 +9,7 @@ use App\Http\Requests\Api\StoreDonationItemRequest;
 use App\Http\Requests\Api\UpdateDonationItemRequest;
 use App\Http\Requests\Api\UploadDonationImageRequest;
 use App\Models\DonationItem;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -442,5 +443,110 @@ class DonationItemController extends Controller
         }
 
         return response()->json(['message' => 'Imagens enviadas com sucesso', 'data' => $saved], 201);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/donation-items/{donationItem}/donate",
+     *     summary="Concluir a doação de um item, escolhendo o recebedor",
+     *     tags={"Donation Items"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(name="donationItem", in="path", required=true, @OA\Schema(type="integer")),
+     *
+     *     @OA\RequestBody(
+     *         required=true,
+     *
+     *         @OA\JsonContent(
+     *             required={"recipient_id"},
+     *
+     *             @OA\Property(property="recipient_id", type="integer", example=2)
+     *         )
+     *     ),
+     *
+     *     @OA\Response(response=200, description="Item marcado como doado"),
+     *     @OA\Response(response=403, description="Sem permissão ou transição inválida")
+     * )
+     */
+    public function donate(Request $request, DonationItem $donationItem): JsonResponse
+    {
+        $data = $request->validate([
+            'recipient_id' => ['required', 'integer', 'exists:users,id'],
+        ]);
+
+        try {
+            $recipient = User::findOrFail($data['recipient_id']);
+            $item = $this->donationItemService->markAsDonated($donationItem, $request->user(), $recipient);
+
+            return response()->json([
+                'message' => 'Item marcado como doado com sucesso',
+                'data' => $item,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao marcar item como doado',
+                'message' => $e->getMessage(),
+            ], 403);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/donation-items/{donationItem}/reserve",
+     *     summary="Reservar um item (available -> reserved)",
+     *     tags={"Donation Items"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(name="donationItem", in="path", required=true, @OA\Schema(type="integer")),
+     *
+     *     @OA\Response(response=200, description="Item reservado"),
+     *     @OA\Response(response=403, description="Sem permissão ou transição inválida")
+     * )
+     */
+    public function reserve(Request $request, DonationItem $donationItem): JsonResponse
+    {
+        try {
+            $item = $this->donationItemService->reserve($donationItem, $request->user());
+
+            return response()->json([
+                'message' => 'Item reservado com sucesso',
+                'data' => $item,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao reservar item',
+                'message' => $e->getMessage(),
+            ], 403);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/donation-items/{donationItem}/cancel-reservation",
+     *     summary="Cancelar a reserva de um item (reserved -> available)",
+     *     tags={"Donation Items"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(name="donationItem", in="path", required=true, @OA\Schema(type="integer")),
+     *
+     *     @OA\Response(response=200, description="Reserva cancelada"),
+     *     @OA\Response(response=403, description="Sem permissão ou transição inválida")
+     * )
+     */
+    public function cancelReservation(Request $request, DonationItem $donationItem): JsonResponse
+    {
+        try {
+            $item = $this->donationItemService->cancelReservation($donationItem, $request->user());
+
+            return response()->json([
+                'message' => 'Reserva cancelada com sucesso',
+                'data' => $item,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao cancelar reserva',
+                'message' => $e->getMessage(),
+            ], 403);
+        }
     }
 }
