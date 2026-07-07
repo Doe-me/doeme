@@ -19,6 +19,11 @@ class DonationImagesRepository implements DonationImagesRepositoryInterface
         return $this->model::find($id);
     }
 
+    public function delete(DonationImages $image): bool
+    {
+        return (bool) $image->delete();
+    }
+
     public function deleteByItemId(int $donationItemId): bool
     {
         return $this->model->where('donation_item_id', $donationItemId)->delete() > 0;

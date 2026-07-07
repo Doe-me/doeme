@@ -8,9 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreDonationItemRequest;
 use App\Http\Requests\Api\UpdateDonationItemRequest;
 use App\Http\Requests\Api\UploadDonationImageRequest;
+use App\Models\DonationImages;
 use App\Models\DonationItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @OA\Tag(
@@ -195,6 +197,10 @@ class DonationItemController extends Controller
     public function show(DonationItem $donationItem): JsonResponse
     {
         try {
+            // Route-model binding traz o item "cru"; carregamos as relações que o
+            // frontend precisa (dono, categoria e as fotos enviadas por upload).
+            $donationItem->load(['user', 'category', 'donationImages']);
+
             $relatedItems = $this->donationItemService->getRelatedItems($donationItem);
 
             return response()->json([
@@ -442,5 +448,36 @@ class DonationItemController extends Controller
         }
 
         return response()->json(['message' => 'Imagens enviadas com sucesso', 'data' => $saved], 201);
+    }
+
+    /**
+     * @OA\Delete(
+     *     path="/api/donation-items/{donationItem}/images/{image}",
+     *     summary="Remover uma imagem de um item de doação",
+     *     tags={"Donation Items"},
+     *     security={{"bearerAuth":{}}},
+     *
+     *     @OA\Parameter(name="donationItem", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Parameter(name="image", in="path", required=true, @OA\Schema(type="integer")),
+     *
+     *     @OA\Response(response=200, description="Imagem removida com sucesso"),
+     *     @OA\Response(response=403, description="Sem permissão"),
+     *     @OA\Response(response=404, description="Imagem não pertence ao item")
+     * )
+     */
+    public function deleteImage(Request $request, DonationItem $donationItem, DonationImages $image): JsonResponse
+    {
+        if ($request->user()->id !== $donationItem->user_id) {
+            return response()->json(['error' => 'Sem permissão.'], 403);
+        }
+
+        if ($image->donation_item_id !== $donationItem->id) {
+            return response()->json(['error' => 'Imagem não encontrada para este item.'], 404);
+        }
+
+        Storage::disk('public')->delete($image->path);
+        $this->donationImagesRepository->delete($image);
+
+        return response()->json(['message' => 'Imagem removida com sucesso']);
     }
 }

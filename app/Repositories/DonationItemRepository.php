@@ -19,14 +19,14 @@ class DonationItemRepository implements DonationItemRepositoryInterface
 
     public function findById(int $id): ?DonationItem
     {
-        return DonationItem::with(['user', 'category', 'reviews.reviewer'])->find($id);
+        return DonationItem::with(['user', 'category', 'reviews.reviewer', 'donationImages'])->find($id);
     }
 
     public function update(DonationItem $item, array $data): DonationItem
     {
         $item->update($data);
 
-        return $item->fresh(['user', 'category']);
+        return $item->fresh(['user', 'category', 'donationImages']);
     }
 
     public function delete(DonationItem $item): bool
@@ -36,7 +36,7 @@ class DonationItemRepository implements DonationItemRepositoryInterface
 
     public function getAvailableItems(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
-        $query = DonationItem::with(['user', 'category'])
+        $query = DonationItem::with(['user', 'category', 'donationImages'])
             ->available()
             ->latest();
 
@@ -74,7 +74,7 @@ class DonationItemRepository implements DonationItemRepositoryInterface
 
     public function getUserItems(User $user, int $perPage = 15): LengthAwarePaginator
     {
-        return DonationItem::with(['category'])
+        return DonationItem::with(['category', 'donationImages'])
             ->where('user_id', $user->id)
             ->latest()
             ->paginate($perPage);
@@ -89,7 +89,7 @@ class DonationItemRepository implements DonationItemRepositoryInterface
      */
     public function findByLocation(float $latitude, float $longitude, float $radius = 10, int $perPage = 15): LengthAwarePaginator
     {
-        $candidates = DonationItem::with(['user', 'category'])
+        $candidates = DonationItem::with(['user', 'category', 'donationImages'])
             ->available()
             ->nearLocation($latitude, $longitude, (float) $radius)
             ->get();
@@ -118,7 +118,7 @@ class DonationItemRepository implements DonationItemRepositoryInterface
 
     public function findByCategory(int $categoryId, int $perPage = 15): LengthAwarePaginator
     {
-        return DonationItem::with(['user', 'category'])
+        return DonationItem::with(['user', 'category', 'donationImages'])
             ->available()
             ->where('category_id', $categoryId)
             ->latest()
@@ -133,12 +133,12 @@ class DonationItemRepository implements DonationItemRepositoryInterface
             'donated_to_user_id' => $recipient->id,
         ]);
 
-        return $item->fresh(['user', 'category', 'donatedToUser']);
+        return $item->fresh(['user', 'category', 'donatedToUser', 'donationImages']);
     }
 
     public function getRelatedItems(DonationItem $item, int $limit = 5): Collection
     {
-        return DonationItem::with(['user', 'category'])
+        return DonationItem::with(['user', 'category', 'donationImages'])
             ->available()
             ->where('id', '!=', $item->id)
             ->where('category_id', $item->category_id)
